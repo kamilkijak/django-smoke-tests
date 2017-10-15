@@ -2,15 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-test_django-smoke-tests
-------------
-
-Tests for `django-smoke-tests` models module.
+Tests for `smoke_tests` command.
 """
 from django.core.management import call_command
-from mock import patch
-
 from django.test import TestCase
+from mock import patch
 
 from django_smoke_tests.tests import SmokeTests
 from django_smoke_tests.management.commands import smoke_tests
