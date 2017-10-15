@@ -17,7 +17,6 @@ class Command(BaseCommand):
     METHODS_TO_TEST = ['GET', 'POST', 'DELETE']
 
     def handle(self, *args, **options):
-
         all_endpoints = get_resolver(None).reverse_dict
 
         for endpoint, endpoint_params in all_endpoints.items():
@@ -59,7 +58,11 @@ class Command(BaseCommand):
         url = url_as_str % parameters
         return url if url.startswith('/') else '/{}'.format(url)
 
-    def create_tests_for_http_methods(self, url, endpoint, detail_url=False):
+    def create_tests_for_http_methods(self, url, endpoint_name, detail_url=False):
         for method in self.METHODS_TO_TEST:
             test = self._test_generator(url, method, detail_url)
-            setattr(SmokeTests, 'test_smoke_{}_{}'.format(method, endpoint), test)
+            setattr(SmokeTests, self.create_test_name(method, endpoint_name), test)
+
+    @staticmethod
+    def create_test_name(method, endpoint_name):
+        return 'test_smoke_{}_{}'.format(method, endpoint_name)
