@@ -16,7 +16,24 @@ class Command(BaseCommand):
 
     METHODS_TO_TEST = ['GET', 'POST', 'DELETE']
 
+    def __init__(self):
+        self.methods_to_test = self.METHODS_TO_TEST
+        super(Command, self).__init__()
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--http-methods',
+            default=None,
+            type=str,
+            help='Comma separated HTTP methods that will be executed for all endpoint. '
+                 'Eg. GET,POST,DELETE'
+        )
+
     def handle(self, *args, **options):
+        methods_to_test = options.get('http_methods')
+        if methods_to_test:
+            self.methods_to_test = methods_to_test.split(',')
+
         all_endpoints = get_resolver(None).reverse_dict
 
         for endpoint, endpoint_params in all_endpoints.items():
@@ -59,7 +76,7 @@ class Command(BaseCommand):
         return url if url.startswith('/') else '/{}'.format(url)
 
     def create_tests_for_http_methods(self, url, endpoint_name, detail_url=False):
-        for method in self.METHODS_TO_TEST:
+        for method in self.methods_to_test:
             test = self._test_generator(url, method, detail_url)
             setattr(SmokeTests, self.create_test_name(method, endpoint_name), test)
 
