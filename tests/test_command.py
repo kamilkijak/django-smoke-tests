@@ -10,7 +10,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from mock import patch
 
-from django_smoke_tests.tests import SmokeTests, SmokeTestsGenerator
+from django_smoke_tests.tests import HTTPMethodNotSupported, SmokeTests, SmokeTestsGenerator
 from .urls import urlpatterns
 
 
@@ -20,7 +20,7 @@ class TestSmokeTestsCommand(TestCase):
     def setUpClass(cls):
         super(TestSmokeTestsCommand, cls).setUpClass()
         cls.test_generator = SmokeTestsGenerator()
-        cls.all_possible_methods = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']
+        cls.all_possible_methods = cls.test_generator.SUPPORTED_HTTP_METHODS
 
     @patch('django_smoke_tests.tests.call_command')
     def test_proper_tests_were_created_for_default_methods(self, mocked_call_command):
@@ -28,7 +28,7 @@ class TestSmokeTestsCommand(TestCase):
         mocked_call_command.assert_called_once()
 
         for url in urlpatterns:
-            for method in self.test_generator.METHODS_TO_TEST:
+            for method in self.test_generator.SUPPORTED_HTTP_METHODS:
                 test_name = self.test_generator.create_test_name(method, url.name)
                 self.assertTrue(hasattr(SmokeTests, test_name))
 
@@ -50,6 +50,12 @@ class TestSmokeTestsCommand(TestCase):
             for method in methods_not_called:
                 test_name = self.test_generator.create_test_name(method, url.name)
                 self.assertFalse(hasattr(SmokeTests, test_name))
+
+    @patch('django_smoke_tests.tests.call_command')
+    def test_raise_an_error_for_not_supported_http_method(self, mocked_call_command):
+        with self.assertRaises(HTTPMethodNotSupported):
+            call_command('smoke_tests', http_methods='WRONG')
+        mocked_call_command.assert_not_called()
 
     def tearDown(self):
         pass

@@ -7,22 +7,31 @@ from django.test import TestCase
 from django.urls import get_resolver
 
 
+class HTTPMethodNotSupported(Exception):
+    pass
+
+
 class SmokeTestsGenerator:
 
-    METHODS_TO_TEST = ['GET', 'POST', 'DELETE']
+    SUPPORTED_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE']
 
-    def __init__(self, methods_to_test=None):
-        self.methods_to_test = methods_to_test or self.METHODS_TO_TEST
+    def __init__(self, http_methods=None):
+        if http_methods:
+            self.validate_custom_http_methods(http_methods)
+        self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
+
+    def validate_custom_http_methods(self, http_methods):
+        unsupported_methods = set(http_methods) - set(self.SUPPORTED_HTTP_METHODS)
+        if unsupported_methods:
+            raise HTTPMethodNotSupported(
+                'Methods {} are not supported'.format(list(unsupported_methods))
+            )
 
     @staticmethod
     def _test_generator(url, method, detail_url=False):
         def test(self):
-            if method == 'GET':
-                response = self.client.get(url)
-            elif method == 'POST':
-                response = self.client.post(url, {})
-            elif method == 'DELETE':
-                response = self.client.delete(url)
+            http_method_function = getattr(self.client, method.lower(), None)
+            response = http_method_function(url, {})
 
             allowed_status_codes = [200, 201, 301, 302, 304, 405]
             if detail_url:

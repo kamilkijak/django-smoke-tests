@@ -25,5 +25,5 @@ class Command(BaseCommand):
         if methods_to_test:
             methods_to_test = methods_to_test.split(',')
 
-        generator = SmokeTestsGenerator(methods_to_test=methods_to_test)
+        generator = SmokeTestsGenerator(http_methods=methods_to_test)
         generator.execute()
