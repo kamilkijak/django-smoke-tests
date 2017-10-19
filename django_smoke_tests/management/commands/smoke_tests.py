@@ -10,7 +10,7 @@ from ...tests import SmokeTestsGenerator
 
 
 class Command(BaseCommand):
-    help = "Smoke"
+    help = "Smoke tests for Django endpoints."
 
     def add_arguments(self, parser):
         parser.add_argument(
