@@ -3,6 +3,7 @@ from django.core.management import BaseCommand
 try:
     from django.urls import get_resolver
 except ImportError:
+    # Django < 1.10
     from django.core.urlresolvers import get_resolver
 
 from ...tests import SmokeTestsGenerator

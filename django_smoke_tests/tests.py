@@ -4,7 +4,12 @@ import string
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
-from django.urls import get_resolver
+
+try:
+    from django.urls import get_resolver
+except ImportError:
+    # Django < 1.10
+    from django.core.urlresolvers import get_resolver
 
 
 class HTTPMethodNotSupported(Exception):
