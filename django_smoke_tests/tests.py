@@ -4,6 +4,7 @@ import string
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
+from six import string_types
 
 try:
     from django.urls import get_resolver
@@ -54,7 +55,7 @@ class SmokeTestsGenerator:
         call_command('test', 'django_smoke_tests')
 
     def create_tests_for_endpoint(self, endpoint, endpoint_params):
-        if isinstance(endpoint, str):
+        if isinstance(endpoint, string_types):
             [(url_as_str, url_params)], url_pattern, _ = endpoint_params
 
             fake_params = {param: self.create_random_string() for param in url_params}
