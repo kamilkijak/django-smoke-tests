@@ -31,22 +31,11 @@ Add it to your `INSTALLED_APPS`:
 
     INSTALLED_APPS = (
         ...
-        'django_smoke_tests.apps.DjangoSmokeTestsConfig',
+        'django_smoke_tests',
         ...
     )
 
 Add django-smoke-tests's URL patterns:
-
-.. code-block:: python
-
-    from django_smoke_tests import urls as django_smoke_tests_urls
-
-
-    urlpatterns = [
-        ...
-        url(r'^', include(django_smoke_tests_urls)),
-        ...
-    ]
 
 Features
 --------
