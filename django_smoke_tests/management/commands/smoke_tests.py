@@ -6,7 +6,7 @@ except ImportError:
     # Django < 1.10
     from django.core.urlresolvers import get_resolver
 
-from ...tests import SmokeTestsGenerator
+from ...generator import SmokeTestsGenerator
 
 
 class Command(BaseCommand):

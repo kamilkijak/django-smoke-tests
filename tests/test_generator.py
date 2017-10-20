@@ -3,7 +3,7 @@ from mock import patch
 
 from django.test import TestCase
 
-from django_smoke_tests.tests import SmokeTestsGenerator
+from django_smoke_tests.generator import SmokeTestsGenerator
 
 
 class TestSmokeTestsGenerator(TestCase):
