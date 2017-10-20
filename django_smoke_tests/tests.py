@@ -73,8 +73,11 @@ class SmokeTestsGenerator:
 
     def create_tests_for_http_methods(self, url, endpoint_name, detail_url=False):
         for method in self.methods_to_test:
-            test = self._test_generator(url, method, detail_url)
-            setattr(SmokeTests, self.create_test_name(method, endpoint_name), test)
+            self.create_test_for_http_method(method, url, endpoint_name, detail_url)
+
+    def create_test_for_http_method(self, method, url, endpoint_name, detail_url=False):
+        test = self._test_generator(url, method, detail_url)
+        setattr(SmokeTests, self.create_test_name(method, endpoint_name), test)
 
     @staticmethod
     def create_test_name(method, endpoint_name):
