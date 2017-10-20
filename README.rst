@@ -35,8 +35,6 @@ Add it to your `INSTALLED_APPS`:
         ...
     )
 
-Add django-smoke-tests's URL patterns:
-
 Features
 --------
 
