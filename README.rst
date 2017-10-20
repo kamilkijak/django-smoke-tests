@@ -35,6 +35,10 @@ Add it to your `INSTALLED_APPS`:
         ...
     )
 
+Execute smoke tests::
+
+    python manage.py smoke_tests
+
 Features
 --------
 
