@@ -4,7 +4,8 @@ branch = true
 [report]
 omit =
     *site-packages*
-    *tests*
+    tests*
+    django_smoke_tests/tests.py
     *.tox*
 show_missing = True
 exclude_lines =
