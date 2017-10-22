@@ -58,7 +58,6 @@ class TestSmokeTestsGenerator(TestCase):
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_execute_smoke_test_that_passes(self, http_method):
-
         # use new endpoint to be sure that test was not created in previous tests
         endpoint_name = self.tests_generator.create_random_string(length=10)
         endpoint_url = '/{}'.format(endpoint_name)

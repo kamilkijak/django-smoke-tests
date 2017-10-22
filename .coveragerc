@@ -6,6 +6,7 @@ omit =
     *site-packages*
     tests*
     django_smoke_tests/tests.py
+    django_smoke_tests/apps.py
     *.tox*
 show_missing = True
 exclude_lines =
