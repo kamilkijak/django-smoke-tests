@@ -1,5 +1,6 @@
 import unittest
 
+from django.http import HttpResponse
 from django.test import TestCase
 from mock import patch
 from parameterized import parameterized
@@ -57,7 +58,7 @@ class TestSmokeTestsGenerator(TestCase):
         return test_runner.wasSuccessful(), test_runner.failures
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
-    def test_execute_smoke_test_that_passes(self, http_method):
+    def test_if_smoke_test_fails_on_allowed_response_status_code(self, http_method):
         # use new endpoint to be sure that test was not created in previous tests
         endpoint_name = self.tests_generator.create_random_string(length=10)
         endpoint_url = '/{}'.format(endpoint_name)
@@ -75,3 +76,30 @@ class TestSmokeTestsGenerator(TestCase):
         is_successful, failures = self._execute_smoke_test(expected_test_name)
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
+
+    @parameterized.expand(SUPPORTED_HTTP_METHODS)
+    def test_if_smoke_test_fails_on_500_response_status_code(self, http_method):
+        """
+        Check if smoke test fails when gets 500 status code from endpoint's response.
+        """
+        with patch('django.test.client.Client.{}'.format(http_method.lower())) as mocked_method:
+            mocked_method.return_value = HttpResponse(status=500)
+
+            # use new endpoint to be sure that test was not created in previous tests
+            endpoint_name = self.tests_generator.create_random_string(length=10)
+            endpoint_url = '/{}'.format(endpoint_name)
+            expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_name)
+
+            self.tests_generator.create_test_for_http_method(
+                http_method, endpoint_url, endpoint_name
+            )
+
+            # check if test was created and added to test class
+            self.assertTrue(
+                hasattr(SmokeTests, expected_test_name)
+            )
+
+            is_successful, failures = self._execute_smoke_test(expected_test_name)
+
+            self.assertFalse(is_successful)
+            self.assertEqual(len(failures), 1)
