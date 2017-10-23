@@ -58,5 +58,14 @@ class TestSmokeTestsCommand(TestCase):
             call_command('smoke_tests', http_methods='WRONG')
         mocked_call_command.assert_not_called()
 
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_right_allowed_status_codes_are_passed_to_test_generator(self, mocked_generator):
+        allowed_status_codes = '200,201'
+        call_command('smoke_tests', allowed_status_codes=allowed_status_codes)
+        self.assertEqual(
+            mocked_generator.call_args[1]['allowed_status_codes'],
+            allowed_status_codes.split(',')
+        )
+
     def tearDown(self):
         pass

@@ -1,3 +1,4 @@
+import random
 import unittest
 
 from django.http import HttpResponse
@@ -91,6 +92,61 @@ class TestSmokeTestsGenerator(TestCase):
             expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_name)
 
             self.tests_generator.create_test_for_http_method(
+                http_method, endpoint_url, endpoint_name
+            )
+
+            # check if test was created and added to test class
+            self.assertTrue(
+                hasattr(SmokeTests, expected_test_name)
+            )
+
+            is_successful, failures = self._execute_smoke_test(expected_test_name)
+
+            self.assertFalse(is_successful)
+            self.assertEqual(len(failures), 1)
+
+    @parameterized.expand(SUPPORTED_HTTP_METHODS)
+    def test_if_smoke_test_passes_on_custom_allowed_response_status_code(self, http_method):
+        custom_allowed_status_code = random.randint(100, 510)
+        tests_generator = SmokeTestsGenerator(allowed_status_codes=[custom_allowed_status_code])
+
+        with patch('django.test.client.Client.{}'.format(http_method.lower())) as mocked_method:
+            mocked_method.return_value = HttpResponse(status=custom_allowed_status_code)
+
+            # use new endpoint to be sure that test was not created in previous tests
+            endpoint_name = tests_generator.create_random_string(length=10)
+            endpoint_url = '/{}'.format(endpoint_name)
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+
+            tests_generator.create_test_for_http_method(
+                http_method, endpoint_url, endpoint_name
+            )
+
+            # check if test was created and added to test class
+            self.assertTrue(
+                hasattr(SmokeTests, expected_test_name)
+            )
+
+            is_successful, failures = self._execute_smoke_test(expected_test_name)
+
+            self.assertTrue(is_successful)
+            self.assertEqual(failures, [])
+
+    @parameterized.expand(SUPPORTED_HTTP_METHODS)
+    def test_if_smoke_test_fails_on_custom_allowed_response_status_code(self, http_method):
+        custom_allowed_status_code = random.randint(100, 510)
+        tests_generator = SmokeTestsGenerator(allowed_status_codes=[custom_allowed_status_code])
+
+        with patch('django.test.client.Client.{}'.format(http_method.lower())) as mocked_method:
+            # return different status code
+            mocked_method.return_value = HttpResponse(status=custom_allowed_status_code + 1)
+
+            # use new endpoint to be sure that test was not created in previous tests
+            endpoint_name = tests_generator.create_random_string(length=10)
+            endpoint_url = '/{}'.format(endpoint_name)
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+
+            tests_generator.create_test_for_http_method(
                 http_method, endpoint_url, endpoint_name
             )
 

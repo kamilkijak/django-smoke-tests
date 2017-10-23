@@ -20,11 +20,13 @@ class HTTPMethodNotSupported(Exception):
 class SmokeTestsGenerator:
 
     SUPPORTED_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE']
+    ALLOWED_STATUS_CODES = [200, 201, 301, 302, 304, 405]
 
-    def __init__(self, http_methods=None):
+    def __init__(self, http_methods=None, allowed_status_codes=None):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
         self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
+        self.allowed_status_codes = allowed_status_codes or self.ALLOWED_STATUS_CODES
 
     def validate_custom_http_methods(self, http_methods):
         unsupported_methods = set(http_methods) - set(self.SUPPORTED_HTTP_METHODS)
@@ -33,16 +35,15 @@ class SmokeTestsGenerator:
                 'Methods {} are not supported'.format(list(unsupported_methods))
             )
 
-    @staticmethod
-    def _test_generator(url, method, detail_url=False):
-        def test(self):
-            http_method_function = getattr(self.client, method.lower(), None)
+    def _test_generator(self, url, method, detail_url=False):
+        def test(self_of_test):
+            http_method_function = getattr(self_of_test.client, method.lower(), None)
             response = http_method_function(url, {})
-
-            allowed_status_codes = [200, 201, 301, 302, 304, 405]
-            if detail_url:
-                allowed_status_codes.append(404)
-            self.assertIn(response.status_code, allowed_status_codes)
+            additional_status_codes = [404] if detail_url else []
+            self_of_test.assertIn(
+                response.status_code,
+                self.allowed_status_codes + additional_status_codes
+            )
 
         return test
 
