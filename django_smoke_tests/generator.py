@@ -21,12 +21,14 @@ class SmokeTestsGenerator:
 
     SUPPORTED_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE']
     ALLOWED_STATUS_CODES = [200, 201, 301, 302, 304, 405]
+    DISALLOWED_STATUS_CODES = [500, 501, 502]
 
-    def __init__(self, http_methods=None, allowed_status_codes=None):
+    def __init__(self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
         self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
-        self.allowed_status_codes = allowed_status_codes or self.ALLOWED_STATUS_CODES
+        self.allowed_status_codes = allowed_status_codes
+        self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
 
     def validate_custom_http_methods(self, http_methods):
         unsupported_methods = set(http_methods) - set(self.SUPPORTED_HTTP_METHODS)
@@ -40,10 +42,16 @@ class SmokeTestsGenerator:
             http_method_function = getattr(self_of_test.client, method.lower(), None)
             response = http_method_function(url, {})
             additional_status_codes = [404] if detail_url else []
-            self_of_test.assertIn(
-                response.status_code,
-                self.allowed_status_codes + additional_status_codes
-            )
+            if self.allowed_status_codes:
+                self_of_test.assertIn(
+                    response.status_code,
+                    self.allowed_status_codes + additional_status_codes
+                )
+            else:
+                self_of_test.assertNotIn(
+                    response.status_code,
+                    self.disallowed_status_codes
+                )
 
         return test
 

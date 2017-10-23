@@ -6,7 +6,7 @@ Tests for `smoke_tests` command.
 """
 import random
 
-from django.core.management import call_command
+from django.core.management import call_command, CommandError
 from django.test import TestCase
 from mock import patch
 
@@ -61,11 +61,31 @@ class TestSmokeTestsCommand(TestCase):
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
     def test_right_allowed_status_codes_are_passed_to_test_generator(self, mocked_generator):
         allowed_status_codes = '200,201'
-        call_command('smoke_tests', allowed_status_codes=allowed_status_codes)
+        call_command('smoke_tests', allow_status_codes=allowed_status_codes)
         self.assertEqual(
             mocked_generator.call_args[1]['allowed_status_codes'],
             allowed_status_codes.split(',')
         )
+
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_right_disallowed_status_codes_are_passed_to_test_generator(self, mocked_generator):
+        disallowed_status_codes = '400,401'
+        call_command('smoke_tests', disallow_status_codes=disallowed_status_codes)
+        self.assertEqual(
+            mocked_generator.call_args[1]['disallowed_status_codes'],
+            disallowed_status_codes.split(',')
+        )
+
+    def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):
+        allowed_status_codes = '200,201'
+        disallowed_status_codes = '400,401'
+
+        with self.assertRaises(CommandError):
+            call_command(
+                'smoke_tests',
+                allow_status_codes=allowed_status_codes,
+                disallow_status_codes=disallowed_status_codes
+            )
 
     def tearDown(self):
         pass
