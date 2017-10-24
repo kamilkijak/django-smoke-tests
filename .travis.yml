@@ -3,15 +3,16 @@
 language: python
 
 python:
+  - "2.7"
+  - "3.4"
   - "3.5"
+  - "3.6"
 
+# use default python version for each env
 env:
-  - TOX_ENV=py35-django-18
-  - TOX_ENV=py27-django-18
-  - TOX_ENV=py35-django-19
-  - TOX_ENV=py27-django-19
-  - TOX_ENV=py35-django-110
-  - TOX_ENV=py27-django-110
+  - TOX_ENV=py-django-18
+  - TOX_ENV=py-django-19
+  - TOX_ENV=py-django-110
 
 matrix:
   fast_finish: true
