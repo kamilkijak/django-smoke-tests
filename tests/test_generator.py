@@ -77,6 +77,7 @@ class TestSmokeTestsGenerator(TestCase):
         is_successful, failures = self._execute_smoke_test(expected_test_name)
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
+        self.assertEqual(self.tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_fails_on_500_response_status_code(self, http_method):
@@ -104,6 +105,7 @@ class TestSmokeTestsGenerator(TestCase):
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(self.tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_passes_on_custom_allowed_response_status_codes(self, http_method):
@@ -132,6 +134,7 @@ class TestSmokeTestsGenerator(TestCase):
 
             self.assertTrue(is_successful)
             self.assertEqual(failures, [])
+            self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_fails_on_custom_allowed_response_status_codes(self, http_method):
@@ -161,6 +164,7 @@ class TestSmokeTestsGenerator(TestCase):
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_passes_on_custom_disallowed_response_status_codes(self, http_method):
@@ -192,6 +196,7 @@ class TestSmokeTestsGenerator(TestCase):
 
             self.assertTrue(is_successful)
             self.assertEqual(failures, [])
+            self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_fails_on_custom_disallowed_response_status_codes(self, http_method):
@@ -222,3 +227,4 @@ class TestSmokeTestsGenerator(TestCase):
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(tests_generator.warnings, [])

@@ -1,7 +1,6 @@
 from django.core.management import BaseCommand
 from django.core.management.base import CommandError
 
-
 from ...generator import SmokeTestsGenerator
 
 
@@ -48,6 +47,13 @@ class Command(BaseCommand):
             disallowed_status_codes=disallowed_status_codes,
         )
         generator.execute()
+
+        if generator.warnings:
+            print(
+                'Some tests were skipped. Please report on '
+                'https://github.com/kamilkijak/django-smoke-tests/issues.'
+            )
+            print('\n'.join(generator.warnings))
 
     @staticmethod
     def _get_list_from_string(option):

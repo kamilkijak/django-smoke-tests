@@ -8,6 +8,11 @@ import random
 
 from django.core.management import call_command, CommandError
 from django.test import TestCase
+try:
+    from django.urls import RegexURLPattern
+except ImportError:
+    # Django < 1.10
+    from django.core.urlresolvers import RegexURLPattern
 from mock import patch
 
 from django_smoke_tests.generator import HTTPMethodNotSupported, SmokeTestsGenerator
@@ -28,7 +33,12 @@ class TestSmokeTestsCommand(TestCase):
         call_command('smoke_tests')
         mocked_call_command.assert_called_once()
 
-        for url in urlpatterns:
+        # skip RegexURLResolver (eg. include(app.urls))
+        urlpatterns_without_resolvers = [
+            url for url in urlpatterns if isinstance(url, RegexURLPattern)
+        ]
+
+        for url in urlpatterns_without_resolvers:
             for method in self.test_generator.SUPPORTED_HTTP_METHODS:
                 test_name = self.test_generator.create_test_name(method, url.name)
                 self.assertTrue(hasattr(SmokeTests, test_name))
@@ -43,7 +53,12 @@ class TestSmokeTestsCommand(TestCase):
         call_command('smoke_tests', http_methods=','.join(methods_to_call))
         mocked_call_command.assert_called_once()
 
-        for url in urlpatterns:
+        # skip RegexURLResolver (eg. include(app.urls))
+        urlpatterns_without_resolvers = [
+            url for url in urlpatterns if isinstance(url, RegexURLPattern)
+        ]
+
+        for url in urlpatterns_without_resolvers:
             for method in methods_to_call:
                 test_name = self.test_generator.create_test_name(method, url.name)
                 self.assertTrue(hasattr(SmokeTests, test_name))
@@ -60,6 +75,7 @@ class TestSmokeTestsCommand(TestCase):
 
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
     def test_right_allowed_status_codes_are_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
         allowed_status_codes = '200,201'
         call_command('smoke_tests', allow_status_codes=allowed_status_codes)
         self.assertEqual(
@@ -69,6 +85,7 @@ class TestSmokeTestsCommand(TestCase):
 
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
     def test_right_disallowed_status_codes_are_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
         disallowed_status_codes = '400,401'
         call_command('smoke_tests', disallow_status_codes=disallowed_status_codes)
         self.assertEqual(
