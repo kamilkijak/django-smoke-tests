@@ -102,7 +102,7 @@ class SmokeTestsGenerator:
             if len(endpoint_params[0]) > 1:
                 [_, (url_as_str, url_params)], url_pattern, _ = endpoint_params
 
-        if not url_as_str:
+        if url_as_str is None:
             raise UrlStructureNotSupported
 
         return url_as_str, url_params
