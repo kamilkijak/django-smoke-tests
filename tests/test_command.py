@@ -80,7 +80,7 @@ class TestSmokeTestsCommand(TestCase):
         call_command('smoke_tests', allow_status_codes=allowed_status_codes)
         self.assertEqual(
             mocked_generator.call_args[1]['allowed_status_codes'],
-            allowed_status_codes.split(',')
+            [int(code) for code in allowed_status_codes.split(',')]
         )
 
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
@@ -90,7 +90,7 @@ class TestSmokeTestsCommand(TestCase):
         call_command('smoke_tests', disallow_status_codes=disallowed_status_codes)
         self.assertEqual(
             mocked_generator.call_args[1]['disallowed_status_codes'],
-            disallowed_status_codes.split(',')
+            [int(code) for code in disallowed_status_codes.split(',')]
         )
 
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):

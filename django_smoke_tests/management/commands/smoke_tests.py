@@ -56,5 +56,15 @@ class Command(BaseCommand):
             print('\n'.join(generator.warnings))
 
     @staticmethod
-    def _get_list_from_string(option):
-        return option.split(',') if option else None
+    def _get_list_from_string(options):
+        """
+        Transforms comma separated string into a list of those elements.
+        Transforms strings to ints if they are numbers.
+        Eg.:
+            "200,'400','xxx'" => [200, 400, 'xxx']
+        """
+        if options:
+            return [
+                int(option) if option.isdigit() else option for option in options.split(',')
+            ]
+        return None
