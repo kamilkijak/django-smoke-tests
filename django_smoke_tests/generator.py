@@ -85,7 +85,7 @@ class SmokeTestsGenerator:
                     'Test skipped. URL << {} >> could not be stripped.'.format(
                         endpoint_params
                     ))
-                self.create_tests_for_http_methods(None, None, skipped=True)
+                self.create_tests_for_http_methods(None, endpoint, skipped=True)
             else:
                 fake_params = {param: self.create_random_string() for param in url_params}
                 url = self.create_url(url_as_str, fake_params)

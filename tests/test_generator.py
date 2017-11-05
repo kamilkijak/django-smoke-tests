@@ -56,7 +56,7 @@ class TestSmokeTestsGenerator(TestCase):
         test_runner = unittest.TextTestRunner(stream=DummyStream).run(suite)
 
         self.assertEqual(test_runner.errors, [])  # errors are never expected
-        return test_runner.wasSuccessful(), test_runner.failures
+        return test_runner.wasSuccessful(), test_runner.failures, test_runner.skipped
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_fails_on_allowed_response_status_code(self, http_method):
@@ -74,9 +74,10 @@ class TestSmokeTestsGenerator(TestCase):
             hasattr(SmokeTests, expected_test_name)
         )
 
-        is_successful, failures = self._execute_smoke_test(expected_test_name)
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
+        self.assertEqual(skipped, [])
         self.assertEqual(self.tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
@@ -101,10 +102,11 @@ class TestSmokeTestsGenerator(TestCase):
                 hasattr(SmokeTests, expected_test_name)
             )
 
-            is_successful, failures = self._execute_smoke_test(expected_test_name)
+            is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(skipped, [])
             self.assertEqual(self.tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
@@ -130,10 +132,11 @@ class TestSmokeTestsGenerator(TestCase):
                 hasattr(SmokeTests, expected_test_name)
             )
 
-            is_successful, failures = self._execute_smoke_test(expected_test_name)
+            is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
 
             self.assertTrue(is_successful)
             self.assertEqual(failures, [])
+            self.assertEqual(skipped, [])
             self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
@@ -160,10 +163,11 @@ class TestSmokeTestsGenerator(TestCase):
                 hasattr(SmokeTests, expected_test_name)
             )
 
-            is_successful, failures = self._execute_smoke_test(expected_test_name)
+            is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(skipped, [])
             self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
@@ -192,7 +196,7 @@ class TestSmokeTestsGenerator(TestCase):
                 hasattr(SmokeTests, expected_test_name)
             )
 
-            is_successful, failures = self._execute_smoke_test(expected_test_name)
+            is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
 
             self.assertTrue(is_successful)
             self.assertEqual(failures, [])
@@ -223,8 +227,29 @@ class TestSmokeTestsGenerator(TestCase):
             self.assertTrue(
                 hasattr(SmokeTests, expected_test_name)
             )
-            is_successful, failures = self._execute_smoke_test(expected_test_name)
+            is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
 
             self.assertFalse(is_successful)
             self.assertEqual(len(failures), 1)
+            self.assertEqual(skipped, [])
             self.assertEqual(tests_generator.warnings, [])
+
+    @parameterized.expand(SUPPORTED_HTTP_METHODS)
+    def test_create_skipped_test_for_not_supported_endpoint(self, http_method):
+        tests_generator = SmokeTestsGenerator()
+
+        endpoint_name = tests_generator.create_random_string(length=10)
+        endpoint_params = ((), ())  # empty tuples not supported
+        expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+
+        tests_generator.create_tests_for_endpoint(
+            endpoint_name, endpoint_params
+        )
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(len(tests_generator.warnings), 1)
