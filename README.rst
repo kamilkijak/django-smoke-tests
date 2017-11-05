@@ -13,11 +13,6 @@ django-smoke-tests
 
 Smoke tests for Django project.
 
-Documentation
--------------
-
-The full documentation is at https://django-smoke-tests.readthedocs.io.
-
 Quickstart
 ----------
 
@@ -39,10 +34,21 @@ Execute smoke tests::
 
     python manage.py smoke_tests
 
-Features
---------
 
-* TODO
+Documentation
+-------------
+
+Parameters
+~~~~~~~~~~
++-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
+| Parameter               | Example                                                   | Default                 | Description                                                                                                    |
++-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
+| --http-methods          | python manage.py smoke_tests --http-methods=GET,POST      | GET,POST,PUT,DELETE     | Comma separated list of HTTP methods that will be executed for each endpoint.                                  |
++-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
+| --allow-status-codes    | python manage.py smoke_tests --allow-status-codes=200,201 | 200,201,301,302,304,405 | Comma separated list of response status codes that will be considered as successful tests (expected response). |
++-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
+| --disallow-status-codes | python manage.py smoke_tests --disallow-status-codes=500  | 500,501,502             | Comma separated list of response status codes that will be considered as failed tests (expected response).     |
++-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
 
 Running Tests
 -------------
