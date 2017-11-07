@@ -20,4 +20,11 @@ class SmokeTests(TestCase):
 
     def setUp(self):
         super(SmokeTests, self).setUp()
-        self.client.force_login(self.smoke_user)  # faster than regular logging
+        try:
+            self.client.force_login(self.smoke_user)  # faster than regular logging
+        except AttributeError:
+            # force_login available from Django 1.9
+            self.client.login(
+                usernme=self.smoke_user_credentials['username'],
+                password=self.smoke_user_credentials['password']
+            )
