@@ -96,11 +96,12 @@ class TestSmokeTestsCommand(TestCase):
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
     def test_use_db_option_is_passed_to_test_generator(self, mocked_generator):
         mocked_generator.return_value.warnings = []
-        use_db = False
-        call_command('smoke_tests', use_db=use_db)
+        no_db = True
+
+        call_command('smoke_tests', no_db=no_db)
         self.assertEqual(
             mocked_generator.call_args[1]['use_db'],
-            use_db
+            not no_db
         )
 
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):

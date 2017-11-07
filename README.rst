@@ -49,7 +49,7 @@ Parameters
 +-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
 | --disallow-status-codes | python manage.py smoke_tests --disallow-status-codes=500  | 500,501,502             | Comma separated list of response status codes that will be considered as failed tests (expected response).     |
 +-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
-| --use-db                | python manage.py smoke_tests --use-db=False               | True                    | Boolean value that can turn off creating DB. Important for bigger projects from performance point of view.     |
+| --no-db                 | python manage.py smoke_tests --no-db                      | False (DB created)      | Flag for turning off creation of the DB. Important for bigger projects from performance point of view.         |
 +-------------------------+-----------------------------------------------------------+-------------------------+----------------------------------------------------------------------------------------------------------------+
 
 Running Tests
