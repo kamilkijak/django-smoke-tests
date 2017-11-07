@@ -11,7 +11,10 @@ from django_smoke_tests.tests import SmokeTests
 
 
 # unpack to use in decorators
+from tests.urls import url_patterns_with_authentication
+
 SUPPORTED_HTTP_METHODS = SmokeTestsGenerator.SUPPORTED_HTTP_METHODS
+URL_PATTERNS_WITH_AUTH = [(url_pattern,) for url_pattern in url_patterns_with_authentication]
 
 
 class DummyStream(object):
@@ -253,3 +256,15 @@ class TestSmokeTestsGenerator(TestCase):
 
         self.assertEqual(len(skipped), 1)
         self.assertEqual(len(tests_generator.warnings), 1)
+
+    @parameterized.expand(URL_PATTERNS_WITH_AUTH)
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_authentication_is_successful(self, urlpattern_with_auth, mocked_call_command):
+        tests_generator = SmokeTestsGenerator(disallowed_status_codes=[401, 403])
+        tests_generator.execute()
+        expected_test_name = self.tests_generator.create_test_name('GET', urlpattern_with_auth.name)
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+        mocked_call_command.assert_called_once()
+        self.assertTrue(is_successful)
+        self.assertEqual(failures, [])
+        self.assertEqual(tests_generator.warnings, [])

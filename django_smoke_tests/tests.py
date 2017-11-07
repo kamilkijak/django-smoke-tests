@@ -7,14 +7,17 @@ class SmokeTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super(SmokeTests, cls).setUpClass()
-
-        smoke_user_credentials = {
-            'username': 'smoke_superuser3',
+        cls.smoke_user_credentials = {
+            'username': 'smoke_superuser',
             'email': 'smoke@test.com',
             'password': 'smoke_password'
         }
-        User.objects.create_superuser(
-            smoke_user_credentials['username'],
-            smoke_user_credentials['email'],
-            smoke_user_credentials['password'],
+        cls.smoke_user = User.objects.create_superuser(
+            cls.smoke_user_credentials['username'],
+            cls.smoke_user_credentials['email'],
+            cls.smoke_user_credentials['password'],
         )
+
+    def setUp(self):
+        super(SmokeTests, self).setUp()
+        self.client.force_login(self.smoke_user)  # faster than regular logging

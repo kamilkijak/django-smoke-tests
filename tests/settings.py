@@ -21,13 +21,22 @@ ROOT_URLCONF = "tests.urls"
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
     "django.contrib.sites",
     "django_smoke_tests",
+
+    'rest_framework',
 ]
 
 SITE_ID = 1
 
 if django.VERSION >= (1, 10):
-    MIDDLEWARE = ()
+    MIDDLEWARE = (
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+    )
 else:
-    MIDDLEWARE_CLASSES = ()
+    MIDDLEWARE_CLASSES = (
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+    )
