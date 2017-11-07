@@ -29,11 +29,18 @@ class Command(BaseCommand):
             help='Comma separated HTTP status codes that will be considered as fail responses. '
                  'Eg. 404,500'
         )
+        parser.add_argument(
+            '--use-db',
+            default=True,
+            type=bool,
+            help='Skip DB creation for better performance.'
+        )
 
     def handle(self, *args, **options):
         methods_to_test = self._get_list_from_string(options.get('http_methods'))
         allowed_status_codes = self._get_list_from_string(options.get('allow_status_codes'))
         disallowed_status_codes = self._get_list_from_string(options.get('disallow_status_codes'))
+        use_db = options.get('use_db')
 
         if allowed_status_codes and disallowed_status_codes:
             raise CommandError(
@@ -45,6 +52,7 @@ class Command(BaseCommand):
             http_methods=methods_to_test,
             allowed_status_codes=allowed_status_codes,
             disallowed_status_codes=disallowed_status_codes,
+            use_db=use_db
         )
         generator.execute()
 

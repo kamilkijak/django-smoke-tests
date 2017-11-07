@@ -11,7 +11,7 @@ except ImportError:
     from django.core.urlresolvers import get_resolver
 from unittest import skip
 
-from django_smoke_tests.tests import SmokeTests
+from .tests import SmokeTests
 
 
 class HTTPMethodNotSupported(Exception):
@@ -28,12 +28,16 @@ class SmokeTestsGenerator:
     ALLOWED_STATUS_CODES = [200, 201, 301, 302, 304, 405]
     DISALLOWED_STATUS_CODES = [500, 501, 502]
 
-    def __init__(self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None):
+    def __init__(
+        self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
+        use_db=True
+    ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
         self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
         self.allowed_status_codes = allowed_status_codes
         self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
+        self.use_db = use_db
         self.warnings = []
 
     def validate_custom_http_methods(self, http_methods):
@@ -74,7 +78,12 @@ class SmokeTestsGenerator:
         for endpoint, endpoint_params in all_endpoints.items():
             self.create_tests_for_endpoint(endpoint, endpoint_params)
 
-        call_command('test', 'django_smoke_tests')
+        if self.use_db:
+            call_command('test', 'django_smoke_tests')
+        else:
+            call_command(
+                'test', 'django_smoke_tests', testrunner='django_smoke_tests.runners.NoDbTestRunner'
+            )
 
     def create_tests_for_endpoint(self, endpoint, endpoint_params):
         if isinstance(endpoint, string_types):

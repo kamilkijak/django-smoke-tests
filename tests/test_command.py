@@ -93,6 +93,16 @@ class TestSmokeTestsCommand(TestCase):
             [int(code) for code in disallowed_status_codes.split(',')]
         )
 
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_use_db_option_is_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        use_db = False
+        call_command('smoke_tests', use_db=use_db)
+        self.assertEqual(
+            mocked_generator.call_args[1]['use_db'],
+            use_db
+        )
+
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):
         allowed_status_codes = '200,201'
         disallowed_status_codes = '400,401'
