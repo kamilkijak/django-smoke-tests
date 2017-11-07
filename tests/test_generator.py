@@ -259,12 +259,38 @@ class TestSmokeTestsGenerator(TestCase):
 
     @parameterized.expand(URL_PATTERNS_WITH_AUTH)
     @patch('django_smoke_tests.generator.call_command')
-    def test_if_authentication_is_successful(self, urlpattern_with_auth, mocked_call_command):
-        tests_generator = SmokeTestsGenerator(disallowed_status_codes=[401, 403])
+    def test_if_authentication_is_successful(self, url_pattern_with_auth, mocked_call_command):
+        tests_generator = SmokeTestsGenerator()
         tests_generator.execute()
-        expected_test_name = self.tests_generator.create_test_name('GET', urlpattern_with_auth.name)
+        expected_test_name = self.tests_generator.create_test_name(
+            'GET', url_pattern_with_auth.name
+        )
         is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
         mocked_call_command.assert_called_once()
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
         self.assertEqual(tests_generator.warnings, [])
+
+    def test_if_test_without_db_is_successful(self):
+        tests_generator = SmokeTestsGenerator(use_db=False)
+        http_method = 'GET'
+        endpoint_name = self.tests_generator.create_random_string(length=10)
+        endpoint_url = '/{}'.format(endpoint_name)
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, endpoint_name
+        )
+        tests_generator.create_test_for_http_method(
+            http_method, endpoint_url, endpoint_name
+        )
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+        self.assertTrue(is_successful)
+        self.assertEqual(failures, [])
+        self.assertEqual(tests_generator.warnings, [])
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_test_without_db_is_called_with_custom_runner(self, mocked_call_command):
+        tests_generator = SmokeTestsGenerator(use_db=False)
+        tests_generator.execute()
+        mocked_call_command.assert_called_once_with(
+            'test', 'django_smoke_tests', testrunner='django_smoke_tests.runners.NoDbTestRunner'
+        )
