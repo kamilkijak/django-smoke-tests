@@ -16,10 +16,11 @@ from parameterized import parameterized
 from django_smoke_tests.generator import SmokeTestsGenerator
 from django_smoke_tests.tests import SmokeTests
 
-
-# unpack to use in decorators
+from tests.app.urls import urlpatterns as app_url_patterns
 from tests.urls import url_patterns_with_authentication
 
+
+# unpack to use in decorators
 SUPPORTED_HTTP_METHODS = SmokeTestsGenerator.SUPPORTED_HTTP_METHODS
 URL_PATTERNS_WITH_AUTH = [(url_pattern,) for url_pattern in url_patterns_with_authentication]
 
@@ -303,3 +304,35 @@ class TestSmokeTestsGenerator(TestCase):
         mocked_call_command.assert_called_once_with(
             'test', 'django_smoke_tests', testrunner='django_smoke_tests.runners.NoDbTestRunner'
         )
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_smoke_test_is_created_only_for_specified_app(
+            self, mocked_call_command
+    ):
+        outside_app_url_pattern = RegexURLPattern(
+            r'^{}$'.format(self._create_random_string()),
+            RedirectView.as_view(url='/', permanent=False),
+            name=self._create_random_string()
+        )
+        outside_app_test_name = self.tests_generator.create_test_name(
+            'GET', outside_app_url_pattern.regex.pattern
+        )
+
+        inside_app_url_pattern = app_url_patterns[0]
+        inside_app_url_full_pattern = '^app_urls/' + inside_app_url_pattern.regex.pattern
+        inside_app_test_name = self.tests_generator.create_test_name(
+            'GET', inside_app_url_full_pattern
+        )
+
+        tests_generator = SmokeTestsGenerator(app_name='tests.app')
+        tests_generator.execute()
+
+        self.assertFalse(
+            hasattr(SmokeTests, outside_app_test_name)
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, inside_app_test_name)
+        )
+
+        mocked_call_command.assert_called_once_with('test', 'django_smoke_tests')

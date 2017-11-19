@@ -33,7 +33,7 @@ class SmokeTestsGenerator:
 
     def __init__(
             self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
-            use_db=True
+            use_db=True, app_name=''
     ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
@@ -41,6 +41,7 @@ class SmokeTestsGenerator:
         self.allowed_status_codes = allowed_status_codes
         self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
         self.use_db = use_db
+        self.app_name = self.validate_app_name(app_name)
         self.warnings = []
 
         self.all_patterns = []  # [(url_pattern, lookup_str),]
@@ -51,6 +52,12 @@ class SmokeTestsGenerator:
             raise HTTPMethodNotSupported(
                 'Methods {} are not supported'.format(list(unsupported_methods))
             )
+
+    @staticmethod
+    def validate_app_name(app_name):
+        if app_name and app_name not in settings.INSTALLED_APPS:
+            raise AppNotInInstalledApps()
+        return app_name
 
     def _generate_test(self, url, method, detail_url=False):
         def test(self_of_test):
@@ -124,18 +131,19 @@ class SmokeTestsGenerator:
             return callback.__module__ + "." + callback.__name__
 
     def create_tests_for_endpoint(self, url_pattern, lookup_str):
-        try:
-            url_as_str, url_params = self.normalize_url_pattern(url_pattern)
-        except UrlStructureNotSupported:
-            self.warnings.append(
-                'Test skipped. URL << {} >> could not be parsed.'.format(
-                    url_pattern
-                ))
-            self.create_tests_for_http_methods(None, url_pattern, skipped=True)
-        else:
-            fake_params = {param: self.create_random_value() for param in url_params}
-            url = self.create_url(url_as_str, fake_params)
-            self.create_tests_for_http_methods(url, url_pattern, detail_url=bool(url_params))
+        if lookup_str.startswith(self.app_name):
+            try:
+                url_as_str, url_params = self.normalize_url_pattern(url_pattern)
+            except UrlStructureNotSupported:
+                self.warnings.append(
+                    'Test skipped. URL << {} >> could not be parsed.'.format(
+                        url_pattern
+                    ))
+                self.create_tests_for_http_methods(None, url_pattern, skipped=True)
+            else:
+                fake_params = {param: self.create_random_value() for param in url_params}
+                url = self.create_url(url_as_str, fake_params)
+                self.create_tests_for_http_methods(url, url_pattern, detail_url=bool(url_params))
 
     @staticmethod
     def normalize_url_pattern(url_pattern):

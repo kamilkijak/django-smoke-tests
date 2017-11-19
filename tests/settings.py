@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django_smoke_tests",
 
     'rest_framework',
+    'tests.app',
 ]
 
 SITE_ID = 1

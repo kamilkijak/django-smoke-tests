@@ -104,6 +104,17 @@ class TestSmokeTestsCommand(TestCase):
             not no_db
         )
 
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_app_name_option_is_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        app_name = 'test_app_name'
+
+        call_command('smoke_tests', app_name)
+        self.assertEqual(
+            mocked_generator.call_args[1]['app_name'],
+            app_name
+        )
+
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):
         allowed_status_codes = '200,201'
         disallowed_status_codes = '400,401'

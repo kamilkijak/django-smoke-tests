@@ -31,12 +31,14 @@ class Command(BaseCommand):
         )
         parser.add_argument('--no-db', dest='no_db', action='store_true')
         parser.set_defaults(no_db=False)
+        parser.add_argument('app_name', default=None, nargs='?')
 
     def handle(self, *args, **options):
         methods_to_test = self._get_list_from_string(options.get('http_methods'))
         allowed_status_codes = self._get_list_from_string(options.get('allow_status_codes'))
         disallowed_status_codes = self._get_list_from_string(options.get('disallow_status_codes'))
         use_db = not options.get('no_db')
+        app_name = (options.get('app_name') or '').strip('/')
 
         if allowed_status_codes and disallowed_status_codes:
             raise CommandError(
@@ -48,7 +50,8 @@ class Command(BaseCommand):
             http_methods=methods_to_test,
             allowed_status_codes=allowed_status_codes,
             disallowed_status_codes=disallowed_status_codes,
-            use_db=use_db
+            use_db=use_db,
+            app_name=app_name,
         )
         generator.execute()
 
