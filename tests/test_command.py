@@ -40,7 +40,7 @@ class TestSmokeTestsCommand(TestCase):
 
         for url in urlpatterns_without_resolvers:
             for method in self.test_generator.SUPPORTED_HTTP_METHODS:
-                test_name = self.test_generator.create_test_name(method, url.name)
+                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
                 self.assertTrue(hasattr(SmokeTests, test_name))
 
     @patch('django_smoke_tests.generator.call_command')
@@ -60,11 +60,11 @@ class TestSmokeTestsCommand(TestCase):
 
         for url in urlpatterns_without_resolvers:
             for method in methods_to_call:
-                test_name = self.test_generator.create_test_name(method, url.name)
+                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
                 self.assertTrue(hasattr(SmokeTests, test_name))
 
             for method in methods_not_called:
-                test_name = self.test_generator.create_test_name(method, url.name)
+                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
                 self.assertFalse(hasattr(SmokeTests, test_name))
 
     @patch('django_smoke_tests.generator.call_command')

@@ -1,8 +1,15 @@
 import random
+import string
 import unittest
 
 from django.http import HttpResponse
 from django.test import TestCase
+try:
+    from django.urls import RegexURLPattern
+except ImportError:
+    # Django < 1.10
+    from django.core.urlresolvers import RegexURLPattern
+from django.views.generic import RedirectView
 from mock import patch
 from parameterized import parameterized
 
@@ -40,14 +47,17 @@ class TestSmokeTestsGenerator(TestCase):
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     @patch('django_smoke_tests.tests.SmokeTests')
     def test_create_test_for_http_method(self, http_method, MockedSmokeTests):
-        endpoint_name = 'simple-endpoint'
         url = '/simple-url'
-        self.tests_generator.create_test_for_http_method(http_method, url, endpoint_name)
+        self.tests_generator.create_test_for_http_method(http_method, url, url)
 
-        expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_name)
+        expected_test_name = self.tests_generator.create_test_name(http_method, url)
         self.assertTrue(
             hasattr(MockedSmokeTests, expected_test_name)
         )
+
+    @staticmethod
+    def _create_random_string(length=5):
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
     def _execute_smoke_test(self, test_name):
         """
@@ -64,12 +74,11 @@ class TestSmokeTestsGenerator(TestCase):
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     def test_if_smoke_test_fails_on_allowed_response_status_code(self, http_method):
         # use new endpoint to be sure that test was not created in previous tests
-        endpoint_name = self.tests_generator.create_random_string(length=10)
-        endpoint_url = '/{}'.format(endpoint_name)
-        expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_name)
+        endpoint_url = '/{}'.format(self._create_random_string())
+        expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_url)
 
         self.tests_generator.create_test_for_http_method(
-            http_method, endpoint_url, endpoint_name, detail_url=True
+            http_method, endpoint_url, detail_url=True
         )  # detail_url set to True to allow 404
 
         # check if test was created and added to test class
@@ -92,12 +101,11 @@ class TestSmokeTestsGenerator(TestCase):
             mocked_method.return_value = HttpResponse(status=500)
 
             # use new endpoint to be sure that test was not created in previous tests
-            endpoint_name = self.tests_generator.create_random_string(length=10)
-            endpoint_url = '/{}'.format(endpoint_name)
-            expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_name)
+            endpoint_url = '/{}'.format(self._create_random_string())
+            expected_test_name = self.tests_generator.create_test_name(http_method, endpoint_url)
 
             self.tests_generator.create_test_for_http_method(
-                http_method, endpoint_url, endpoint_name
+                http_method, endpoint_url
             )
 
             # check if test was created and added to test class
@@ -122,12 +130,11 @@ class TestSmokeTestsGenerator(TestCase):
             mocked_method.return_value = HttpResponse(status=custom_allowed_status_codes[0])
 
             # use new endpoint to be sure that test was not created in previous tests
-            endpoint_name = tests_generator.create_random_string(length=10)
-            endpoint_url = '/{}'.format(endpoint_name)
-            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+            endpoint_url = '/{}'.format(self._create_random_string())
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_url)
 
             tests_generator.create_test_for_http_method(
-                http_method, endpoint_url, endpoint_name
+                http_method, endpoint_url
             )
 
             # check if test was created and added to test class
@@ -153,12 +160,11 @@ class TestSmokeTestsGenerator(TestCase):
             mocked_method.return_value = HttpResponse(status=custom_allowed_status_codes[0] + 10)
 
             # use new endpoint to be sure that test was not created in previous tests
-            endpoint_name = tests_generator.create_random_string(length=10)
-            endpoint_url = '/{}'.format(endpoint_name)
-            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+            endpoint_url = '/{}'.format(self._create_random_string())
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_url)
 
             tests_generator.create_test_for_http_method(
-                http_method, endpoint_url, endpoint_name
+                http_method, endpoint_url
             )
 
             # check if test was created and added to test class
@@ -186,12 +192,11 @@ class TestSmokeTestsGenerator(TestCase):
             mocked_method.return_value = HttpResponse(status=random_status_code + 10)
 
             # use new endpoint to be sure that test was not created in previous tests
-            endpoint_name = tests_generator.create_random_string(length=10)
-            endpoint_url = '/{}'.format(endpoint_name)
-            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+            endpoint_url = '/{}'.format(self._create_random_string())
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_url)
 
             tests_generator.create_test_for_http_method(
-                http_method, endpoint_url, endpoint_name
+                http_method, endpoint_url
             )
 
             # check if test was created and added to test class
@@ -218,12 +223,11 @@ class TestSmokeTestsGenerator(TestCase):
             mocked_method.return_value = HttpResponse(status=custom_disallowed_status_codes[0])
 
             # use new endpoint to be sure that test was not created in previous tests
-            endpoint_name = tests_generator.create_random_string(length=10)
-            endpoint_url = '/{}'.format(endpoint_name)
-            expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+            endpoint_url = '/{}'.format(self._create_random_string())
+            expected_test_name = tests_generator.create_test_name(http_method, endpoint_url)
 
             tests_generator.create_test_for_http_method(
-                http_method, endpoint_url, endpoint_name
+                http_method, endpoint_url
             )
 
             # check if test was created and added to test class
@@ -238,15 +242,21 @@ class TestSmokeTestsGenerator(TestCase):
             self.assertEqual(tests_generator.warnings, [])
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
-    def test_create_skipped_test_for_not_supported_endpoint(self, http_method):
+    @patch('django_smoke_tests.generator.normalize')
+    def test_create_skipped_test_for_not_supported_endpoint(self, http_method, mocked_normalize):
+        mocked_normalize.return_value = []
         tests_generator = SmokeTestsGenerator()
-
-        endpoint_name = tests_generator.create_random_string(length=10)
-        endpoint_params = ((), ())  # empty tuples not supported
-        expected_test_name = tests_generator.create_test_name(http_method, endpoint_name)
+        url_pattern = RegexURLPattern(
+            r'^{}$'.format(self._create_random_string()),
+            RedirectView.as_view(url='/', permanent=False),
+            name=self._create_random_string()
+        )
+        expected_test_name = tests_generator.create_test_name(
+            http_method, url_pattern.regex.pattern
+        )
 
         tests_generator.create_tests_for_endpoint(
-            endpoint_name, endpoint_params
+            url_pattern.regex.pattern, tests_generator.get_lookup_str(url_pattern)
         )
         self.assertTrue(
             hasattr(SmokeTests, expected_test_name)
@@ -263,7 +273,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator = SmokeTestsGenerator()
         tests_generator.execute()
         expected_test_name = self.tests_generator.create_test_name(
-            'GET', url_pattern_with_auth.name
+            'GET', url_pattern_with_auth.regex.pattern
         )
         is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
         mocked_call_command.assert_called_once()
@@ -274,13 +284,12 @@ class TestSmokeTestsGenerator(TestCase):
     def test_if_test_without_db_is_successful(self):
         tests_generator = SmokeTestsGenerator(use_db=False)
         http_method = 'GET'
-        endpoint_name = self.tests_generator.create_random_string(length=10)
-        endpoint_url = '/{}'.format(endpoint_name)
+        endpoint_url = '/{}'.format(self._create_random_string())
         expected_test_name = self.tests_generator.create_test_name(
-            http_method, endpoint_name
+            http_method, endpoint_url
         )
         tests_generator.create_test_for_http_method(
-            http_method, endpoint_url, endpoint_name
+            http_method, endpoint_url
         )
         is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
         self.assertTrue(is_successful)
