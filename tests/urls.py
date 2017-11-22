@@ -3,8 +3,11 @@ from __future__ import unicode_literals, absolute_import
 
 from django.conf.urls import url, include
 from django.views.generic import RedirectView
+from rest_framework.routers import DefaultRouter
 
-from .views import simple_method_view, view_with_django_auth, view_with_drf_auth, ViewWithDRFAuth
+from .views import (
+    simple_method_view, view_with_django_auth, view_with_drf_auth, SimpleViewSet, ViewWithDRFAuth
+)
 
 
 # kept separately, because they are used in tests
@@ -31,3 +34,8 @@ urlpatterns = [
     url(r'^app_urls/', include('tests.app.urls')),
 
 ] + url_patterns_with_authentication
+
+router = DefaultRouter()
+router.register(r'view-set', SimpleViewSet, base_name='view-set')
+
+urlpatterns += router.urls
