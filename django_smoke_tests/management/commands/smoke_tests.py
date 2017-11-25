@@ -56,11 +56,11 @@ class Command(BaseCommand):
         generator.execute()
 
         if generator.warnings:
-            print(
+            self.stdout.write(
                 'Some tests were skipped. Please report on '
                 'https://github.com/kamilkijak/django-smoke-tests/issues.'
             )
-            print('\n'.join(generator.warnings))
+            self.stdout.write('\n'.join(generator.warnings))
 
     @staticmethod
     def _get_list_from_string(options):
