@@ -13,7 +13,7 @@ from django.views.generic import RedirectView
 from mock import patch
 from parameterized import parameterized
 
-from django_smoke_tests.generator import SmokeTestsGenerator
+from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenerator
 from django_smoke_tests.tests import SmokeTests
 
 from tests.app.urls import urlpatterns as app_url_patterns
@@ -336,3 +336,10 @@ class TestSmokeTestsGenerator(TestCase):
         )
 
         mocked_call_command.assert_called_once_with('test', 'django_smoke_tests')
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_error_is_raised_when_app_is_not_in_installed_apps(self, mocked_call_command):
+        with self.assertRaises(AppNotInInstalledApps):
+            tests_generator = SmokeTestsGenerator(app_name=self._create_random_string())
+            tests_generator.execute()
+        mocked_call_command.assert_not_called()
