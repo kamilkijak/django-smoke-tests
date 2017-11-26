@@ -35,7 +35,7 @@ class SimpleViewSet(ViewSet):
         return Response([])
 
     def create(self, request):
-        return  Response(status=HTTP_201_CREATED)
+        return Response(status=HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
         return Response()

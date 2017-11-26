@@ -1,5 +1,4 @@
 import random
-import string
 import unittest
 
 from django.http import HttpResponse
@@ -17,6 +16,9 @@ from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenera
 from django_smoke_tests.tests import SmokeTests
 
 from tests.app.urls import urlpatterns as app_url_patterns
+from tests.app.urls import (
+    url_patterns_with_decorator_with_wraps, url_patterns_with_decorator_without_wraps
+)
 from tests.helpers import create_random_string
 from tests.urls import url_patterns_with_authentication
 
@@ -45,6 +47,12 @@ class TestSmokeTestsGenerator(TestCase):
     def setUp(self):
         super(TestSmokeTestsGenerator, self).setUp()
         self.tests_generator = SmokeTestsGenerator()
+
+    def tearDown(self):
+        # remove all tests created and added to SmokeTests
+        tests_created = [attr for attr in vars(SmokeTests) if attr.startswith('test_smoke')]
+        for test_name in tests_created:
+            delattr(SmokeTests, test_name)
 
     @parameterized.expand(SUPPORTED_HTTP_METHODS)
     @patch('django_smoke_tests.tests.SmokeTests')
@@ -340,3 +348,36 @@ class TestSmokeTestsGenerator(TestCase):
             tests_generator = SmokeTestsGenerator(app_name=create_random_string())
             tests_generator.execute()
         mocked_call_command.assert_not_called()
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_view_decorated_with_wraps_is_added_for_specified_app(self, mocked_call_command):
+        url_pattern = url_patterns_with_decorator_with_wraps[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(app_name='tests.app', http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, '^app_urls/' + url_pattern.regex.pattern
+        )
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+        mocked_call_command.assert_called_once()
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_view_decorated_without_wraps_is_not_added_for_specified_app(
+            self, mocked_call_command
+    ):
+        # it's not possible to retrieve callback (view) module when it's wrapped in decorator
+        url_pattern = url_patterns_with_decorator_without_wraps[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(app_name='tests.app', http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, '^app_urls/' + url_pattern.regex.pattern
+        )
+        self.assertFalse(
+            hasattr(SmokeTests, expected_test_name)
+        )
+        mocked_call_command.assert_called_once()
