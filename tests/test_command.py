@@ -18,6 +18,7 @@ from mock import patch
 from django_smoke_tests.generator import HTTPMethodNotSupported, SmokeTestsGenerator
 from django_smoke_tests.tests import SmokeTests
 from .urls import urlpatterns
+from .helpers import captured_output, create_random_string
 
 
 class TestSmokeTestsCommand(TestCase):
@@ -125,6 +126,19 @@ class TestSmokeTestsCommand(TestCase):
                 allow_status_codes=allowed_status_codes,
                 disallow_status_codes=disallowed_status_codes
             )
+
+    @patch('django_smoke_tests.generator.call_command')
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_warnings_are_printed(self, mocked_generator, mocked_call_command):
+        mocked_generator.return_value.warnings = [
+            create_random_string() for _ in range(random.randint(1, 10))
+        ]
+
+        with captured_output() as (out, err):
+            call_command('smoke_tests')
+
+        self.assertNotEqual(out.getvalue(), '')
+        mocked_call_command.assert_not_called()
 
     def tearDown(self):
         pass
