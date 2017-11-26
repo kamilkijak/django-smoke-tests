@@ -64,26 +64,14 @@ class SmokeTestsGenerator:
             http_method_function = getattr(self_of_test.client, method.lower(), None)
             response = http_method_function(url, {})
             additional_status_codes = [404] if detail_url else []
-            if self.allowed_status_codes:
-                if response.status_code not in self.allowed_status_codes + additional_status_codes:
-                    self_of_test.fail(
-                        '\nSMOKE TEST FAILED.'
-                        '\nURL {}'
-                        '\nMETHOD {}'
-                        '\nSTATUS CODE {}'.format(
-                            url, method, response.status_code
-                        )
-                    )
-            else:
-                if response.status_code in self.disallowed_status_codes:
-                    self_of_test.fail(
-                        '\nSMOKE TEST FAILED.'
-                        '\nURL {}'
-                        '\nMETHOD {}'
-                        '\nSTATUS CODE {}'.format(
-                            url, method, response.status_code
-                        )
-                    )
+            if self.allowed_status_codes and (
+                response.status_code not in self.allowed_status_codes + additional_status_codes
+            ):
+                self_of_test.fail_test(url, method, response=response)
+            elif not self.allowed_status_codes and (
+                response.status_code in self.disallowed_status_codes
+            ):
+                self_of_test.fail_test(url, method, response=response)
         return test
 
     @staticmethod
@@ -147,7 +135,6 @@ class SmokeTestsGenerator:
 
     @staticmethod
     def normalize_url_pattern(url_pattern):
-        url_as_str, url_params = None, []
         normalized = normalize(url_pattern)
 
         try:
