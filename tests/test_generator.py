@@ -2,7 +2,8 @@ import random
 import unittest
 
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
+
 try:
     from django.urls import RegexURLPattern
 except ImportError:
@@ -425,4 +426,26 @@ class TestSmokeTestsGenerator(TestCase):
 
         self.assertTrue(is_successful)
         self.assertEqual(len(skipped), 1)
+        self.assertEqual(failures, [])
+
+    @override_settings(SKIP_SMOKE_TESTS=[])
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_url_is_not_skipped_when_setting_is_empty(self, mocked_call_command):
+        url_pattern = skipped_url_patterns[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = tests_generator.create_test_name(
+            http_method, url_pattern.regex.pattern
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(skipped, [])
         self.assertEqual(failures, [])
