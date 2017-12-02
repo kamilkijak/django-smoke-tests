@@ -45,3 +45,7 @@ class SimpleViewSet(ViewSet):
 
     def destroy(self, request, pk=None):
         Response(status=HTTP_204_NO_CONTENT)
+
+
+def skipped_view(request):
+    return HttpResponse()

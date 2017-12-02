@@ -16,12 +16,15 @@ from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenera
 from django_smoke_tests.tests import SmokeTests
 
 from tests.app.urls import urlpatterns as app_url_patterns
+from tests.app.urls import skipped_app_url_patterns
 from tests.app.urls import (
     url_patterns_with_decorator_with_wraps, url_patterns_with_decorator_without_wraps
 )
 from tests.helpers import create_random_string
-from tests.urls import url_patterns_with_authentication
+from tests.urls import url_patterns_with_authentication, skipped_url_patterns
 
+
+SKIPPED_URL_PATTERNS = skipped_url_patterns + skipped_app_url_patterns
 
 # unpack to use in decorators
 SUPPORTED_HTTP_METHODS = SmokeTestsGenerator.SUPPORTED_HTTP_METHODS
@@ -262,7 +265,7 @@ class TestSmokeTestsGenerator(TestCase):
         )
 
         tests_generator.create_tests_for_endpoint(
-            url_pattern.regex.pattern, tests_generator.get_lookup_str(url_pattern)
+            url_pattern.regex.pattern, url_pattern.name
         )
         self.assertTrue(
             hasattr(SmokeTests, expected_test_name)
@@ -381,3 +384,45 @@ class TestSmokeTestsGenerator(TestCase):
             hasattr(SmokeTests, expected_test_name)
         )
         mocked_call_command.assert_called_once()
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_skipped_url(self, mocked_call_command):
+        url_pattern = skipped_url_patterns[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = tests_generator.create_test_name(
+            http_method, url_pattern.regex.pattern
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(failures, [])
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_skipped_app_url(self, mocked_call_command):
+        url_pattern = skipped_app_url_patterns[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = tests_generator.create_test_name(
+            http_method, '^app_urls/' + url_pattern.regex.pattern
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(failures, [])

@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from .views import (
     app_view,
+    skipped_app_view,
     view_with_decorator_with_wraps,
     view_with_decorator_without_wraps
 )
@@ -22,6 +23,11 @@ url_patterns_with_decorator_without_wraps = [
     ),
 ]
 
+skipped_app_url_patterns = [
+    url(r'^skipped-app-endpoint/$', skipped_app_view, name='skipped_app_endpoint'),
+]
+
 urlpatterns = [
     url(r'^(/(?P<parameter>.+))?', app_view, name='app_view'),
-] + url_patterns_with_decorator_with_wraps + url_patterns_with_decorator_without_wraps
+] + url_patterns_with_decorator_with_wraps + url_patterns_with_decorator_without_wraps + \
+    skipped_app_url_patterns

@@ -6,7 +6,8 @@ from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    simple_method_view, view_with_django_auth, view_with_drf_auth, SimpleViewSet, ViewWithDRFAuth
+    skipped_view, simple_method_view, view_with_django_auth, view_with_drf_auth, SimpleViewSet,
+    ViewWithDRFAuth
 )
 
 
@@ -18,6 +19,10 @@ url_patterns_with_authentication = [
         name='endpoint_with_drf_authentication_class'
     ),
     url(r'^test-django-auth/$', view_with_django_auth, name='endpoint_with_django_authentication'),
+]
+
+skipped_url_patterns = [
+    url(r'^skipped-endpoint/$', skipped_view, name='skipped_endpoint'),
 ]
 
 
@@ -33,7 +38,7 @@ urlpatterns = [
     # fixed edge cases
     url(r'^app_urls/', include('tests.app.urls')),
 
-] + url_patterns_with_authentication
+] + url_patterns_with_authentication + skipped_url_patterns
 
 router = DefaultRouter()
 router.register(r'view-set', SimpleViewSet, base_name='view-set')

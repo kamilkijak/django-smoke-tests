@@ -15,3 +15,7 @@ def view_with_decorator_with_wraps(request):
 @decorator_without_functools_wraps
 def view_with_decorator_without_wraps(request):
     return HttpResponse()
+
+
+def skipped_app_view(request):
+    return HttpResponse()

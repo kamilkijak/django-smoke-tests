@@ -44,7 +44,7 @@ class SmokeTestsGenerator:
         self.app_name = self.validate_app_name(app_name)
         self.warnings = []
 
-        self.all_patterns = []  # [(url_pattern, lookup_str),]
+        self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
 
     def validate_custom_http_methods(self, http_methods):
         unsupported_methods = set(http_methods) - set(self.SUPPORTED_HTTP_METHODS)
@@ -85,8 +85,9 @@ class SmokeTestsGenerator:
     def execute(self):
         self.load_all_endpoints(RegexURLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
 
-        for url_pattern, lookup_str in self.all_patterns:
-            self.create_tests_for_endpoint(url_pattern, lookup_str)
+        for url_pattern, lookup_str, url_name in self.all_patterns:
+            if lookup_str.startswith(self.app_name):
+                self.create_tests_for_endpoint(url_pattern, url_name)
 
         if self.use_db:
             call_command('test', 'django_smoke_tests')
@@ -103,9 +104,11 @@ class SmokeTestsGenerator:
                     url_pattern.url_patterns, parent_url + url_pattern.regex.pattern
                 )
             else:
-                self.all_patterns.append(
-                    (parent_url + url_pattern.regex.pattern, self.get_lookup_str(url_pattern))
-                )
+                self.all_patterns.append((
+                    parent_url + url_pattern.regex.pattern,
+                    self.get_lookup_str(url_pattern),
+                    url_pattern.name
+                ))
 
     @staticmethod
     def get_lookup_str(url_pattern):
@@ -118,8 +121,10 @@ class SmokeTestsGenerator:
                 return callback.__module__ + "." + callback.__class__.__name__
             return callback.__module__ + "." + callback.__name__
 
-    def create_tests_for_endpoint(self, url_pattern, lookup_str):
-        if lookup_str.startswith(self.app_name):
+    def create_tests_for_endpoint(self, url_pattern, url_name):
+        if self.is_endpoint_skipped(url_name):
+            self.create_tests_for_http_methods(None, url_pattern, skipped=True)
+        else:
             try:
                 url_as_str, url_params = self.normalize_url_pattern(url_pattern)
             except UrlStructureNotSupported:
@@ -132,6 +137,10 @@ class SmokeTestsGenerator:
                 fake_params = {param: self.create_random_value() for param in url_params}
                 url = self.create_url(url_as_str, fake_params)
                 self.create_tests_for_http_methods(url, url_pattern, detail_url=bool(url_params))
+
+    @staticmethod
+    def is_endpoint_skipped(url_name):
+        return url_name in settings.SKIP_SMOKE_TESTS
 
     @staticmethod
     def normalize_url_pattern(url_pattern):
