@@ -14,6 +14,7 @@ from mock import patch
 from parameterized import parameterized
 
 from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenerator
+from django_smoke_tests.runners import NoDbTestRunner
 from django_smoke_tests.tests import SmokeTests
 
 from tests.app.urls import urlpatterns as app_url_patterns
@@ -21,7 +22,7 @@ from tests.app.urls import skipped_app_url_patterns
 from tests.app.urls import (
     url_patterns_with_decorator_with_wraps, url_patterns_with_decorator_without_wraps
 )
-from tests.helpers import create_random_string
+from tests.helpers import captured_output, create_random_string
 from tests.urls import url_patterns_with_authentication, skipped_url_patterns
 
 
@@ -305,6 +306,26 @@ class TestSmokeTestsGenerator(TestCase):
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
         self.assertEqual(tests_generator.warnings, [])
+
+    def test_no_db_test_runner(self):
+        tests_generator = SmokeTestsGenerator(use_db=False)
+        http_method = 'GET'
+        endpoint_url = '/{}'.format(create_random_string())
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, endpoint_url
+        )
+        tests_generator.create_test_for_http_method(
+            http_method, endpoint_url
+        )
+        suite = unittest.TestSuite()
+        suite.addTest(SmokeTests(expected_test_name))
+        with captured_output() as (_, _):  # skip output
+            test_runner = NoDbTestRunner(stream=DummyStream, verbosity=-1).run_suite(suite)
+
+        self.assertEqual(test_runner.errors, [])
+        self.assertTrue(test_runner.wasSuccessful())
+        self.assertEqual(test_runner.failures, [])
+        self.assertEqual(test_runner.skipped, [])
 
     @patch('django_smoke_tests.generator.call_command')
     def test_if_test_without_db_is_called_with_custom_runner(self, mocked_call_command):
