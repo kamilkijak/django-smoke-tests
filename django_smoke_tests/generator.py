@@ -33,7 +33,7 @@ class SmokeTestsGenerator:
 
     def __init__(
             self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
-            use_db=True, app_name=''
+            use_db=True, app_names=None
     ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
@@ -41,7 +41,7 @@ class SmokeTestsGenerator:
         self.allowed_status_codes = allowed_status_codes
         self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
         self.use_db = use_db
-        self.app_name = self.validate_app_name(app_name)
+        self.app_names = self.validate_app_names(app_names)
         self.warnings = []
 
         self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
@@ -54,10 +54,11 @@ class SmokeTestsGenerator:
             )
 
     @staticmethod
-    def validate_app_name(app_name):
-        if app_name and app_name not in settings.INSTALLED_APPS:
-            raise AppNotInInstalledApps()
-        return app_name
+    def validate_app_names(app_names):
+        for app_name in app_names or []:
+            if app_name and app_name not in settings.INSTALLED_APPS:
+                raise AppNotInInstalledApps(app_name)
+        return app_names
 
     def _generate_test(self, url, method, detail_url=False):
         def test(self_of_test):
@@ -86,7 +87,7 @@ class SmokeTestsGenerator:
         self.load_all_endpoints(RegexURLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
 
         for url_pattern, lookup_str, url_name in self.all_patterns:
-            if lookup_str.startswith(self.app_name):
+            if not self.app_names or self.is_url_inside_specified_app(lookup_str):
                 self.create_tests_for_endpoint(url_pattern, url_name)
 
         if self.use_db:
@@ -96,6 +97,12 @@ class SmokeTestsGenerator:
                 'test', 'django_smoke_tests',
                 testrunner='django_smoke_tests.runners.NoDbTestRunner'
             )
+
+    def is_url_inside_specified_app(self, lookup_str):
+        for app_name in self.app_names:
+            if lookup_str.startswith(app_name):
+                return True
+        return False
 
     def load_all_endpoints(self, url_list, parent_url=''):
         for url_pattern in url_list:

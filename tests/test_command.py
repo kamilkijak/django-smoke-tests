@@ -112,8 +112,24 @@ class TestSmokeTestsCommand(TestCase):
 
         call_command('smoke_tests', app_name)
         self.assertEqual(
-            mocked_generator.call_args[1]['app_name'],
+            mocked_generator.call_args[1]['app_names'][0],
             app_name
+        )
+
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_multiple_app_names_are_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        first_app = create_random_string()
+        second_app = create_random_string()
+
+        call_command('smoke_tests', ','.join([first_app, second_app]))
+        self.assertEqual(
+            mocked_generator.call_args[1]['app_names'][0],
+            first_app
+        )
+        self.assertEqual(
+            mocked_generator.call_args[1]['app_names'][1],
+            second_app
         )
 
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):

@@ -332,7 +332,7 @@ class TestSmokeTestsGenerator(TestCase):
             'GET', inside_app_url_full_pattern
         )
 
-        tests_generator = SmokeTestsGenerator(app_name='tests.app')
+        tests_generator = SmokeTestsGenerator(app_names=['tests.app'])
         tests_generator.execute()
 
         self.assertFalse(
@@ -348,7 +348,7 @@ class TestSmokeTestsGenerator(TestCase):
     @patch('django_smoke_tests.generator.call_command')
     def test_if_error_is_raised_when_app_is_not_in_installed_apps(self, mocked_call_command):
         with self.assertRaises(AppNotInInstalledApps):
-            tests_generator = SmokeTestsGenerator(app_name=create_random_string())
+            tests_generator = SmokeTestsGenerator(app_names=[create_random_string()])
             tests_generator.execute()
         mocked_call_command.assert_not_called()
 
@@ -356,7 +356,7 @@ class TestSmokeTestsGenerator(TestCase):
     def test_if_view_decorated_with_wraps_is_added_for_specified_app(self, mocked_call_command):
         url_pattern = url_patterns_with_decorator_with_wraps[0]
         http_method = 'GET'
-        tests_generator = SmokeTestsGenerator(app_name='tests.app', http_methods=[http_method])
+        tests_generator = SmokeTestsGenerator(app_names=['tests.app'], http_methods=[http_method])
         tests_generator.execute()
 
         expected_test_name = self.tests_generator.create_test_name(
@@ -374,7 +374,7 @@ class TestSmokeTestsGenerator(TestCase):
         # it's not possible to retrieve callback (view) module when it's wrapped in decorator
         url_pattern = url_patterns_with_decorator_without_wraps[0]
         http_method = 'GET'
-        tests_generator = SmokeTestsGenerator(app_name='tests.app', http_methods=[http_method])
+        tests_generator = SmokeTestsGenerator(app_names=['tests.app'], http_methods=[http_method])
         tests_generator.execute()
 
         expected_test_name = self.tests_generator.create_test_name(
