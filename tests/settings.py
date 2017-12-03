@@ -31,10 +31,10 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-SKIP_SMOKE_TESTS = [
+SKIP_SMOKE_TESTS = (
     'skipped_endpoint',
     'skipped_app_endpoint',
-]
+)
 
 if django.VERSION >= (1, 10):
     MIDDLEWARE = (

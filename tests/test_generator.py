@@ -449,7 +449,7 @@ class TestSmokeTestsGenerator(TestCase):
         self.assertEqual(len(skipped), 1)
         self.assertEqual(failures, [])
 
-    @override_settings(SKIP_SMOKE_TESTS=[])
+    @override_settings(SKIP_SMOKE_TESTS=())
     @patch('django_smoke_tests.generator.call_command')
     def test_if_url_is_not_skipped_when_setting_is_empty(self, mocked_call_command):
         url_pattern = skipped_url_patterns[0]
