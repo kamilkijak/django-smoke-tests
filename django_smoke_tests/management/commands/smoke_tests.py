@@ -18,8 +18,10 @@ class Command(BaseCommand):
             self, prog="%s %s" % (os.path.basename(prog_name), subcommand),
             description=self.help or None,
         )
-        # create hidden option (required by BaseCommand)
+        # create hidden options (required by BaseCommand)
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
+        parser.add_argument('--settings', help=argparse.SUPPRESS)
+        parser.add_argument('--pythonpath', help=argparse.SUPPRESS)
         self.add_arguments(parser)
         return parser
 
