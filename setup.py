@@ -42,13 +42,19 @@ if sys.argv[-1] == 'tag':
     sys.exit()
 
 readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+
+_read = lambda f: open(
+    os.path.join(os.path.dirname(__file__), f)).read() if os.path.exists(f) else ''
+
+install_requires = [
+    l.replace('==', '>=') for l in _read('requirements.txt').split('\n')
+    if l and not l.startswith('#') and not l.startswith('-')]
 
 setup(
     name='django-smoke-tests',
     version=version,
     description="""Smoke tests for Django project.""",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Kamil Kijak',
     author_email='kamilkijak@gmail.com',
     url='https://github.com/kamilkijak/django-smoke-tests',
@@ -56,24 +62,25 @@ setup(
         'django_smoke_tests',
     ],
     include_package_data=True,
-    install_requires=[],
+    install_requires=install_requires,
     license="MIT",
     zip_safe=False,
-    keywords='django-smoke-tests',
+    keywords=['django-smoke-tests', 'test', 'smoke'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',
         'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.9',
         'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
