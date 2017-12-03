@@ -1,2 +1,5 @@
-Django>=1.8,<2.0
+# don't require Django explicitly in install_requires
+# to avoid upgrading Django when upgrading django_smoke_tests
+# Django>=1.8,<2.0
+
 # Additional requirements go here
