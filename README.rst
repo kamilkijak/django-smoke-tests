@@ -1,6 +1,6 @@
-=============================
+==================
 django-smoke-tests
-=============================
+==================
 
 .. image:: https://badge.fury.io/py/django-smoke-tests.svg
     :target: https://badge.fury.io/py/django-smoke-tests
@@ -11,7 +11,9 @@ django-smoke-tests
 .. image:: https://codecov.io/gh/kamilkijak/django-smoke-tests/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/kamilkijak/django-smoke-tests
 
-Smoke tests for Django project.
+Django command that finds all endpoints in project, executes HTTP requests against them and checks if there are any unexpected responses.
+
+.. image:: https://i.imgur.com/cPK0y3W.gif
 
 .. _contents:
 
