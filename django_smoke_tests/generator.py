@@ -5,10 +5,14 @@ from django.conf import settings
 from django.utils.regex_helper import normalize
 
 try:
-    from django.urls import RegexURLResolver
+    from django.urls import URLResolver
 except ImportError:
-    # Django < 1.10
-    from django.core.urlresolvers import RegexURLResolver
+    # Django < 2.0
+    try:
+        from django.urls import RegexURLResolver as URLResolver
+    except ImportError:
+        # Django < 1.10
+        from django.core.urlresolvers import RegexURLResolver as URLResolver
 from unittest import skip
 
 from .tests import SmokeTests
@@ -84,7 +88,7 @@ class SmokeTestsGenerator:
         return test
 
     def execute(self):
-        self.load_all_endpoints(RegexURLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
+        self.load_all_endpoints(URLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
 
         for url_pattern, lookup_str, url_name in self.all_patterns:
             if not self.app_names or self.is_url_inside_specified_app(lookup_str):
