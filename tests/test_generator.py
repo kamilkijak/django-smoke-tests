@@ -5,15 +5,19 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
 try:
-    from django.urls import RegexURLPattern
+    from django.urls import URLPattern
 except ImportError:
-    # Django < 1.10
-    from django.core.urlresolvers import RegexURLPattern
+    # Django < 2.0
+    try:
+        from django.urls import RegexURLPattern as URLPattern
+    except ImportError:
+        # Django < 1.10
+        from django.core.urlresolvers import RegexURLPattern as URLPattern
 from django.views.generic import RedirectView
 from mock import patch
 from parameterized import parameterized
 
-from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenerator
+from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenerator, get_pattern
 from django_smoke_tests.runners import NoDbTestRunner
 from django_smoke_tests.tests import SmokeTests
 
@@ -257,17 +261,17 @@ class TestSmokeTestsGenerator(TestCase):
     def test_create_skipped_test_for_not_supported_endpoint(self, http_method, mocked_normalize):
         mocked_normalize.return_value = []
         tests_generator = SmokeTestsGenerator()
-        url_pattern = RegexURLPattern(
+        url_pattern = URLPattern(
             r'^{}$'.format(create_random_string()),
             RedirectView.as_view(url='/', permanent=False),
             name=create_random_string()
         )
         expected_test_name = tests_generator.create_test_name(
-            http_method, url_pattern.regex.pattern
+            http_method, get_pattern(url_pattern)
         )
 
         tests_generator.create_tests_for_endpoint(
-            url_pattern.regex.pattern, url_pattern.name
+            get_pattern(url_pattern), url_pattern.name
         )
         self.assertTrue(
             hasattr(SmokeTests, expected_test_name)
@@ -284,7 +288,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator = SmokeTestsGenerator()
         tests_generator.execute()
         expected_test_name = self.tests_generator.create_test_name(
-            'GET', url_pattern_with_auth.regex.pattern
+            'GET', get_pattern(url_pattern_with_auth)
         )
         is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
         mocked_call_command.assert_called_once()
@@ -339,17 +343,17 @@ class TestSmokeTestsGenerator(TestCase):
     def test_smoke_test_is_created_only_for_specified_app(
             self, mocked_call_command
     ):
-        outside_app_url_pattern = RegexURLPattern(
+        outside_app_url_pattern = URLPattern(
             r'^{}$'.format(create_random_string()),
             RedirectView.as_view(url='/', permanent=False),
             name=create_random_string()
         )
         outside_app_test_name = self.tests_generator.create_test_name(
-            'GET', outside_app_url_pattern.regex.pattern
+            'GET', get_pattern(outside_app_url_pattern)
         )
 
         inside_app_url_pattern = app_url_patterns[0]
-        inside_app_url_full_pattern = '^app_urls/' + inside_app_url_pattern.regex.pattern
+        inside_app_url_full_pattern = '^app_urls/' + get_pattern(inside_app_url_pattern)
         inside_app_test_name = self.tests_generator.create_test_name(
             'GET', inside_app_url_full_pattern
         )
@@ -382,7 +386,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
 
         expected_test_name = self.tests_generator.create_test_name(
-            http_method, '^app_urls/' + url_pattern.regex.pattern
+            http_method, '^app_urls/' + get_pattern(url_pattern)
         )
         self.assertTrue(
             hasattr(SmokeTests, expected_test_name)
@@ -400,7 +404,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
 
         expected_test_name = self.tests_generator.create_test_name(
-            http_method, '^app_urls/' + url_pattern.regex.pattern
+            http_method, '^app_urls/' + get_pattern(url_pattern)
         )
         self.assertFalse(
             hasattr(SmokeTests, expected_test_name)
@@ -415,7 +419,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
 
         expected_test_name = tests_generator.create_test_name(
-            http_method, url_pattern.regex.pattern
+            http_method, get_pattern(url_pattern)
         )
 
         self.assertTrue(
@@ -436,7 +440,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
 
         expected_test_name = tests_generator.create_test_name(
-            http_method, '^app_urls/' + url_pattern.regex.pattern
+            http_method, '^app_urls/' + get_pattern(url_pattern)
         )
 
         self.assertTrue(
@@ -458,7 +462,7 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
 
         expected_test_name = tests_generator.create_test_name(
-            http_method, url_pattern.regex.pattern
+            http_method, get_pattern(url_pattern)
         )
 
         self.assertTrue(

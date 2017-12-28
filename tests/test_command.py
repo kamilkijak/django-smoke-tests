@@ -9,13 +9,17 @@ import random
 from django.core.management import call_command, CommandError
 from django.test import TestCase
 try:
-    from django.urls import RegexURLPattern
+    from django.urls import URLPattern
 except ImportError:
-    # Django < 1.10
-    from django.core.urlresolvers import RegexURLPattern
+    # Django < 2.0
+    try:
+        from django.urls import RegexURLPattern as URLPattern
+    except ImportError:
+        # Django < 1.10
+        from django.core.urlresolvers import RegexURLPattern as URLPattern
 from mock import patch
 
-from django_smoke_tests.generator import HTTPMethodNotSupported, SmokeTestsGenerator
+from django_smoke_tests.generator import HTTPMethodNotSupported, SmokeTestsGenerator, get_pattern
 from django_smoke_tests.tests import SmokeTests
 from .urls import urlpatterns
 from .helpers import captured_output, create_random_string
@@ -36,12 +40,12 @@ class TestSmokeTestsCommand(TestCase):
 
         # skip RegexURLResolver (eg. include(app.urls))
         urlpatterns_without_resolvers = [
-            url for url in urlpatterns if isinstance(url, RegexURLPattern)
+            url for url in urlpatterns if isinstance(url, URLPattern)
         ]
 
         for url in urlpatterns_without_resolvers:
             for method in self.test_generator.SUPPORTED_HTTP_METHODS:
-                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
+                test_name = self.test_generator.create_test_name(method, get_pattern(url))
                 self.assertTrue(hasattr(SmokeTests, test_name))
 
     @patch('django_smoke_tests.generator.call_command')
@@ -56,16 +60,16 @@ class TestSmokeTestsCommand(TestCase):
 
         # skip RegexURLResolver (eg. include(app.urls))
         urlpatterns_without_resolvers = [
-            url for url in urlpatterns if isinstance(url, RegexURLPattern)
+            url for url in urlpatterns if isinstance(url, URLPattern)
         ]
 
         for url in urlpatterns_without_resolvers:
             for method in methods_to_call:
-                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
+                test_name = self.test_generator.create_test_name(method, get_pattern(url))
                 self.assertTrue(hasattr(SmokeTests, test_name))
 
             for method in methods_not_called:
-                test_name = self.test_generator.create_test_name(method, url.regex.pattern)
+                test_name = self.test_generator.create_test_name(method, get_pattern(url))
                 self.assertFalse(hasattr(SmokeTests, test_name))
 
     @patch('django_smoke_tests.generator.call_command')
