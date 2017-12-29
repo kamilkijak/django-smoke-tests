@@ -26,12 +26,20 @@ class Command(BaseCommand):
         return parser
 
     def add_arguments(self, parser):
-        parser.add_argument(
+        methods_group = parser.add_mutually_exclusive_group()
+        methods_group.add_argument(
             '--http-methods',
             default=None,
             type=str,
             help='comma separated HTTP methods that will be executed for all endpoints, '
                  'eg. GET,POST,DELETE [default: GET,POST,PUT,DELETE]'
+        )
+        methods_group.add_argument(
+            '-g', '--get-only',
+            action='store_true',
+            default=False,
+            dest='get_only',
+            help='shortcut for --http-methods GET'
         )
         parser.add_argument(
             '--allow-status-codes',
@@ -62,7 +70,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        methods_to_test = self._get_list_from_string(options.get('http_methods'))
+        if options.get('get_only'):
+            methods_to_test = ['GET']
+        else:
+            methods_to_test = self._get_list_from_string(options.get('http_methods'))
         allowed_status_codes = self._get_list_from_string(options.get('allow_status_codes'))
         disallowed_status_codes = self._get_list_from_string(options.get('disallow_status_codes'))
         use_db = not options.get('no_db')
