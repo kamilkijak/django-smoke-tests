@@ -5,13 +5,24 @@ from django.conf import settings
 from django.utils.regex_helper import normalize
 
 try:
-    from django.urls import RegexURLResolver
+    from django.urls import URLResolver
 except ImportError:
-    # Django < 1.10
-    from django.core.urlresolvers import RegexURLResolver
+    # Django < 2.0
+    try:
+        from django.urls import RegexURLResolver as URLResolver
+    except ImportError:
+        # Django < 1.10
+        from django.core.urlresolvers import RegexURLResolver as URLResolver
 from unittest import skip
 
 from .tests import SmokeTests
+
+
+def get_pattern(url_pattern):
+    if hasattr(url_pattern, 'regex'):  # dj < 2.0
+        return url_pattern.regex.pattern
+    else:                              # dj >= 2.0
+        return str(url_pattern.pattern)
 
 
 class HTTPMethodNotSupported(Exception):
@@ -84,8 +95,7 @@ class SmokeTestsGenerator:
         return test
 
     def execute(self):
-        self.load_all_endpoints(RegexURLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
-
+        self.load_all_endpoints(URLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
         for url_pattern, lookup_str, url_name in self.all_patterns:
             if not self.app_names or self.is_url_inside_specified_app(lookup_str):
                 self.create_tests_for_endpoint(url_pattern, url_name)
@@ -108,11 +118,11 @@ class SmokeTestsGenerator:
         for url_pattern in url_list:
             if hasattr(url_pattern, 'url_patterns'):
                 self.load_all_endpoints(
-                    url_pattern.url_patterns, parent_url + url_pattern.regex.pattern
+                    url_pattern.url_patterns, parent_url + get_pattern(url_pattern)
                 )
             else:
                 self.all_patterns.append((
-                    parent_url + url_pattern.regex.pattern,
+                    parent_url + get_pattern(url_pattern),
                     self.get_lookup_str(url_pattern),
                     url_pattern.name
                 ))
