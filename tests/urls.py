@@ -10,6 +10,19 @@ from .views import (
     ViewWithDRFAuth
 )
 
+try:
+    django2_url_patterns = []
+    from django.urls import path
+except ImportError:
+    # Django < 2.0
+    pass
+else:
+    django2_url_patterns = [
+        path(
+            'test-with-new-style-parameter/<int:parameter>', simple_method_view,
+            name='endpoint_with_new_style_parameter'
+        ),
+    ]
 
 # kept separately, because they are used in tests
 url_patterns_with_authentication = [
@@ -25,7 +38,6 @@ skipped_url_patterns = [
     url(r'^skipped-endpoint/$', skipped_view, name='skipped_endpoint'),
 ]
 
-
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='/', permanent=True), name='root_url'),
     url(r'^test/$', RedirectView.as_view(url='/', permanent=True), name='basic_endpoint'),
@@ -38,7 +50,7 @@ urlpatterns = [
     # fixed edge cases
     url(r'^app_urls/', include('tests.app.urls')),
 
-] + url_patterns_with_authentication + skipped_url_patterns
+] + url_patterns_with_authentication + skipped_url_patterns + django2_url_patterns
 
 router = DefaultRouter()
 router.register(r'view-set', SimpleViewSet, base_name='view-set')
