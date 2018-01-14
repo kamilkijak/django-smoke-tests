@@ -75,6 +75,7 @@ Parameters
                             comma separated HTTP methods that will be executed for
                             all endpoints, eg. GET,POST,DELETE
                             [default: GET,POST,PUT,DELETE]
+      -g, --get-only        shortcut for --http-methods GET
       --allow-status-codes ALLOW_STATUS_CODES
                             comma separated HTTP status codes that will be
                             considered as success responses, eg. 200,201,204
