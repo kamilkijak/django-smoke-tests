@@ -77,6 +77,7 @@ class SmokeTestsGenerator:
             response = http_method_function(url, {})
             additional_status_codes = [404] if detail_url else []
             if self.allowed_status_codes:
+                print(response.data)
                 self_of_test.assertIn(
                     response.status_code, self.allowed_status_codes + additional_status_codes
                 )
