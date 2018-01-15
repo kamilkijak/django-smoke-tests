@@ -76,14 +76,14 @@ class SmokeTestsGenerator:
             http_method_function = getattr(self_of_test.client, method.lower(), None)
             response = http_method_function(url, {})
             additional_status_codes = [404] if detail_url else []
-            if self.allowed_status_codes and (
-                response.status_code not in self.allowed_status_codes + additional_status_codes
-            ):
-                self_of_test.fail_test(url, method, response=response)
-            elif not self.allowed_status_codes and (
-                response.status_code in self.disallowed_status_codes
-            ):
-                self_of_test.fail_test(url, method, response=response)
+            if self.allowed_status_codes:
+                self_of_test.assertIn(
+                    response.status_code, self.allowed_status_codes + additional_status_codes
+                )
+            elif not self.allowed_status_codes:
+                self_of_test.assertNotIn(
+                    response.status_code, self.disallowed_status_codes
+                )
         return test
 
     @staticmethod
