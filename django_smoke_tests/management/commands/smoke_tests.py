@@ -22,6 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
         parser.add_argument('--settings', help=argparse.SUPPRESS)
         parser.add_argument('--pythonpath', help=argparse.SUPPRESS)
+        parser.add_argument('--traceback', help=argparse.SUPPRESS)
         self.add_arguments(parser)
         return parser
 
