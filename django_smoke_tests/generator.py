@@ -158,7 +158,7 @@ class SmokeTestsGenerator:
     @staticmethod
     def is_endpoint_skipped(url_name):
         try:
-            return url_name in settings.SKIP_SMOKE_TESTS
+            return url_name and url_name in settings.SKIP_SMOKE_TESTS
         except AttributeError:
             return False
 
