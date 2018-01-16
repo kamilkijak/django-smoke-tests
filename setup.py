@@ -53,7 +53,7 @@ install_requires = [
 setup(
     name='django-smoke-tests',
     version=version,
-    description="""Smoke tests for Django project.""",
+    description="""Automatic smoke tests for Django project.""",
     long_description=readme,
     author='Kamil Kijak',
     author_email='kamilkijak@gmail.com',
