@@ -321,6 +321,24 @@ class TestSmokeTestsGenerator(TestCase):
         tests_generator.execute()
         self.assertTrue(isinstance(mocked_settings.MIGRATION_MODULES, DisableMigrations))
 
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_settings_module_option_is_applied(self, mocked_call_command):
+        settings_module = 'tests.settings'
+        tests_generator = SmokeTestsGenerator(settings_module=settings_module)
+        tests_generator.execute()
+        mocked_call_command.assert_called_once_with(
+            'test', 'django_smoke_tests', settings=settings_module
+        )
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_configuration_option_is_applied(self, mocked_call_command):
+        configuration = 'Development'
+        tests_generator = SmokeTestsGenerator(configuration=configuration)
+        tests_generator.execute()
+        mocked_call_command.assert_called_once_with(
+            'test', 'django_smoke_tests', configuration=configuration
+        )
+
     def test_if_test_without_db_is_successful(self):
         tests_generator = SmokeTestsGenerator(use_db=False)
         http_method = 'GET'

@@ -20,7 +20,6 @@ class Command(BaseCommand):
         )
         # create hidden options (required by BaseCommand)
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
-        parser.add_argument('--settings', help=argparse.SUPPRESS)
         parser.add_argument('--pythonpath', help=argparse.SUPPRESS)
         parser.add_argument('--traceback', help=argparse.SUPPRESS)
         self.add_arguments(parser)
@@ -57,6 +56,18 @@ class Command(BaseCommand):
                  'eg. 404,500'
         )
         parser.add_argument(
+            '--settings',
+            help=(
+                'path to the Django settings module, eg. myproject.settings'
+            ),
+        )
+        parser.add_argument(
+            '--configuration',
+            help=(
+                'name of the configuration class to load, e.g. Development'
+            ),
+        )
+        parser.add_argument(
             '--no-migrations',
             dest='no_migrations',
             action='store_true',
@@ -87,6 +98,8 @@ class Command(BaseCommand):
         disable_migrations = options.get('no_migrations')
         use_db = not options.get('no_db')
         app_names = self._get_list_from_string(options.get('app_names'))
+        settings_module = options.get('settings')
+        configuration = options.get('configuration')
 
         if allowed_status_codes and disallowed_status_codes:
             raise CommandError(
@@ -101,6 +114,8 @@ class Command(BaseCommand):
             use_db=use_db,
             app_names=app_names,
             disable_migrations=disable_migrations,
+            settings_module=settings_module,
+            configuration=configuration,
         )
         generator.execute()
 

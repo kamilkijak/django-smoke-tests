@@ -147,6 +147,28 @@ class TestSmokeTestsCommand(TestCase):
             second_app
         )
 
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_settings_option_is_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        settings = 'tests.settings'
+
+        call_command('smoke_tests', settings=settings)
+        self.assertEqual(
+            mocked_generator.call_args[1]['settings_module'],
+            settings
+        )
+
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_configuration_option_is_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        configuration = 'Development'
+
+        call_command('smoke_tests', configuration=configuration)
+        self.assertEqual(
+            mocked_generator.call_args[1]['configuration'],
+            configuration
+        )
+
     def test_error_is_raised_when_both_allowed_and_disallowed_specified(self):
         allowed_status_codes = '200,201'
         disallowed_status_codes = '400,401'

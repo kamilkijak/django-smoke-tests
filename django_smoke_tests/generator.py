@@ -44,7 +44,8 @@ class SmokeTestsGenerator:
 
     def __init__(
             self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
-            use_db=True, app_names=None, disable_migrations=False
+            use_db=True, app_names=None, disable_migrations=False, settings_module=None,
+            configuration=None
     ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
@@ -54,6 +55,8 @@ class SmokeTestsGenerator:
         self.use_db = use_db
         self.app_names = self.validate_app_names(app_names)
         self.disable_migrations = disable_migrations
+        self.settings_module = settings_module
+        self.configuration = configuration
         self.warnings = []
 
         self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
@@ -104,18 +107,27 @@ class SmokeTestsGenerator:
         if self.disable_migrations:
             self._disable_native_migrations()
 
-        if self.use_db:
-            call_command('test', 'django_smoke_tests')
-        else:
-            call_command(
-                'test', 'django_smoke_tests',
-                testrunner='django_smoke_tests.runners.NoDbTestRunner'
-            )
+        call_command_kwargs = self._get_call_command_kwargs()
+        call_command('test', 'django_smoke_tests', **call_command_kwargs)
 
     @staticmethod
     def _disable_native_migrations():
         from .migrations import DisableMigrations
         settings.MIGRATION_MODULES = DisableMigrations()
+
+    def _get_call_command_kwargs(self):
+        kwargs = {}
+
+        if not self.use_db:
+            kwargs['testrunner'] = 'django_smoke_tests.runners.NoDbTestRunner'
+
+        if self.settings_module:
+            kwargs['settings'] = self.settings_module
+
+        if self.configuration:
+            kwargs['configuration'] = self.configuration
+
+        return kwargs
 
     def is_url_inside_specified_app(self, lookup_str):
         for app_name in self.app_names:
