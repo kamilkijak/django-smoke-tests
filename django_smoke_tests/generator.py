@@ -44,7 +44,7 @@ class SmokeTestsGenerator:
 
     def __init__(
             self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
-            use_db=True, app_names=None
+            use_db=True, app_names=None, disable_migrations=False
     ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
@@ -53,6 +53,7 @@ class SmokeTestsGenerator:
         self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
         self.use_db = use_db
         self.app_names = self.validate_app_names(app_names)
+        self.disable_migrations = disable_migrations
         self.warnings = []
 
         self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
@@ -100,6 +101,9 @@ class SmokeTestsGenerator:
             if not self.app_names or self.is_url_inside_specified_app(lookup_str):
                 self.create_tests_for_endpoint(url_pattern, url_name)
 
+        if self.disable_migrations:
+            self._disable_native_migrations()
+
         if self.use_db:
             call_command('test', 'django_smoke_tests')
         else:
@@ -107,6 +111,11 @@ class SmokeTestsGenerator:
                 'test', 'django_smoke_tests',
                 testrunner='django_smoke_tests.runners.NoDbTestRunner'
             )
+
+    @staticmethod
+    def _disable_native_migrations():
+        from .migrations import DisableMigrations
+        settings.MIGRATION_MODULES = DisableMigrations()
 
     def is_url_inside_specified_app(self, lookup_str):
         for app_name in self.app_names:

@@ -99,6 +99,17 @@ class TestSmokeTestsCommand(TestCase):
         )
 
     @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
+    def test_disable_migrations_option_is_passed_to_test_generator(self, mocked_generator):
+        mocked_generator.return_value.warnings = []
+        disable_migrations = True
+
+        call_command('smoke_tests', no_migrations=disable_migrations)
+        self.assertEqual(
+            mocked_generator.call_args[1]['disable_migrations'],
+            disable_migrations
+        )
+
+    @patch('django_smoke_tests.management.commands.smoke_tests.SmokeTestsGenerator')
     def test_use_db_option_is_passed_to_test_generator(self, mocked_generator):
         mocked_generator.return_value.warnings = []
         no_db = True
@@ -159,6 +170,3 @@ class TestSmokeTestsCommand(TestCase):
 
         self.assertNotEqual(out.getvalue(), '')
         mocked_call_command.assert_not_called()
-
-    def tearDown(self):
-        pass

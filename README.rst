@@ -83,6 +83,8 @@ Parameters
       --disallow-status-codes DISALLOW_STATUS_CODES
                             comma separated HTTP status codes that will be
                             considered as fail responses, eg. 404,500
+      --no-migrations       flag for skipping migrations, database will be created
+                            directly from models
       --no-db               flag for skipping database creation
 
 

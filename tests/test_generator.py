@@ -4,6 +4,8 @@ import unittest
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
+from django_smoke_tests.migrations import DisableMigrations
+
 try:
     from django.urls import URLPattern
 except ImportError:
@@ -295,6 +297,29 @@ class TestSmokeTestsGenerator(TestCase):
         self.assertTrue(is_successful)
         self.assertEqual(failures, [])
         self.assertEqual(tests_generator.warnings, [])
+
+    @override_settings(MIGRATION_MODULES=DisableMigrations())
+    def test_if_test_with_disabled_migrations_is_successful(self):
+        tests_generator = SmokeTestsGenerator()
+        http_method = 'GET'
+        endpoint_url = '/{}'.format(create_random_string())
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, endpoint_url
+        )
+        tests_generator.create_test_for_http_method(
+            http_method, endpoint_url
+        )
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+        self.assertTrue(is_successful)
+        self.assertEqual(failures, [])
+        self.assertEqual(tests_generator.warnings, [])
+
+    @patch('django_smoke_tests.generator.call_command')
+    @patch('django_smoke_tests.generator.settings')
+    def test_if_disable_migrations_option_is_applied(self, mocked_settings, mocked_call_command):
+        tests_generator = SmokeTestsGenerator(disable_migrations=True)
+        tests_generator.execute()
+        self.assertTrue(isinstance(mocked_settings.MIGRATION_MODULES, DisableMigrations))
 
     def test_if_test_without_db_is_successful(self):
         tests_generator = SmokeTestsGenerator(use_db=False)

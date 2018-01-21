@@ -57,6 +57,13 @@ class Command(BaseCommand):
                  'eg. 404,500'
         )
         parser.add_argument(
+            '--no-migrations',
+            dest='no_migrations',
+            action='store_true',
+            help='flag for skipping migrations, database will be created directly from models'
+        )
+        parser.set_defaults(no_migrations=False)
+        parser.add_argument(
             '--no-db',
             dest='no_db',
             action='store_true',
@@ -77,6 +84,7 @@ class Command(BaseCommand):
             methods_to_test = self._get_list_from_string(options.get('http_methods'))
         allowed_status_codes = self._get_list_from_string(options.get('allow_status_codes'))
         disallowed_status_codes = self._get_list_from_string(options.get('disallow_status_codes'))
+        disable_migrations = options.get('no_migrations')
         use_db = not options.get('no_db')
         app_names = self._get_list_from_string(options.get('app_names'))
 
@@ -92,6 +100,7 @@ class Command(BaseCommand):
             disallowed_status_codes=disallowed_status_codes,
             use_db=use_db,
             app_names=app_names,
+            disable_migrations=disable_migrations,
         )
         generator.execute()
 
