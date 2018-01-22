@@ -68,6 +68,12 @@ class Command(BaseCommand):
             ),
         )
         parser.add_argument(
+            '--fixture',
+            help=(
+                'Django fixture JSON file to be loaded before executing smoke tests'
+            ),
+        )
+        parser.add_argument(
             '--no-migrations',
             dest='no_migrations',
             action='store_true',
@@ -100,6 +106,7 @@ class Command(BaseCommand):
         app_names = self._get_list_from_string(options.get('app_names'))
         settings_module = options.get('settings')
         configuration = options.get('configuration')
+        fixture_path = options.get('fixture')
 
         if allowed_status_codes and disallowed_status_codes:
             raise CommandError(
@@ -116,6 +123,7 @@ class Command(BaseCommand):
             disable_migrations=disable_migrations,
             settings_module=settings_module,
             configuration=configuration,
+            fixture_path=fixture_path,
         )
         generator.execute()
 

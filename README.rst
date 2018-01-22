@@ -61,7 +61,9 @@ Parameters
     usage: manage.py smoke_tests [-h] [--http-methods HTTP_METHODS]
                                  [--allow-status-codes ALLOW_STATUS_CODES]
                                  [--disallow-status-codes DISALLOW_STATUS_CODES]
-                                 [--no-db]
+                                 [--settings SETTINGS]
+                                 [--configuration CONFIGURATION]
+                                 [--fixture FIXTURE] [--no-migrations] [--no-db]
                                  [app_names]
 
     Smoke tests for Django endpoints.
@@ -88,6 +90,8 @@ Parameters
       --configuration CONFIGURATION
                             name of the configuration class to load, eg.
                             Development
+      --fixture FIXTURE     Django fixture JSON file to be loaded before executing
+                            smoke tests
       --no-migrations       flag for skipping migrations, database will be created
                             directly from models
       --no-db               flag for skipping database creation

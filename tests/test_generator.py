@@ -517,3 +517,31 @@ class TestSmokeTestsGenerator(TestCase):
         self.assertTrue(is_successful)
         self.assertEqual(skipped, [])
         self.assertEqual(failures, [])
+
+    @patch('django_smoke_tests.tests.call_command')
+    @patch('django_smoke_tests.generator.call_command')
+    def test_if_fixture_is_applied(self, call_command_for_test, call_command_for_loaddata):
+        fixture_path = 'file.json'
+        tests_generator = SmokeTestsGenerator(fixture_path=fixture_path)
+        tests_generator.execute()
+
+        http_method = 'GET'
+        endpoint_url = '/{}'.format(create_random_string())
+        expected_test_name = self.tests_generator.create_test_name(
+            http_method, endpoint_url
+        )
+        tests_generator.create_test_for_http_method(
+            http_method, endpoint_url
+        )
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(skipped, [])
+        self.assertEqual(failures, [])
+
+        call_command_for_test.assert_called_once_with(
+            'test', 'django_smoke_tests'
+        )
+        call_command_for_loaddata.assert_called_once_with(
+            'loaddata', fixture_path
+        )

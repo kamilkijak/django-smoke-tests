@@ -45,7 +45,7 @@ class SmokeTestsGenerator:
     def __init__(
             self, http_methods=None, allowed_status_codes=None, disallowed_status_codes=None,
             use_db=True, app_names=None, disable_migrations=False, settings_module=None,
-            configuration=None
+            configuration=None, fixture_path=None
     ):
         if http_methods:
             self.validate_custom_http_methods(http_methods)
@@ -57,6 +57,7 @@ class SmokeTestsGenerator:
         self.disable_migrations = disable_migrations
         self.settings_module = settings_module
         self.configuration = configuration
+        self.fixture_path = fixture_path
         self.warnings = []
 
         self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
@@ -107,6 +108,8 @@ class SmokeTestsGenerator:
         if self.disable_migrations:
             self._disable_native_migrations()
 
+        self._set_fixture_path()
+
         call_command_kwargs = self._get_call_command_kwargs()
         call_command('test', 'django_smoke_tests', **call_command_kwargs)
 
@@ -114,6 +117,9 @@ class SmokeTestsGenerator:
     def _disable_native_migrations():
         from .migrations import DisableMigrations
         settings.MIGRATION_MODULES = DisableMigrations()
+
+    def _set_fixture_path(self):
+        setattr(SmokeTests, 'fixture_path', self.fixture_path)
 
     def _get_call_command_kwargs(self):
         kwargs = {}

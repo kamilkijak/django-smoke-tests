@@ -1,8 +1,15 @@
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.test import TestCase
 
 
 class SmokeTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        fixture_path = getattr(cls, 'fixture_path', None)
+        if fixture_path:
+            call_command('loaddata', fixture_path)
 
     @classmethod
     def setUpClass(cls):
