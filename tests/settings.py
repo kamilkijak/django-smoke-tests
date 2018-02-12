@@ -31,6 +31,8 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+AUTH_USER_MODEL = 'app.CustomUserModel'
+
 SKIP_SMOKE_TESTS = (
     'skipped_endpoint',
     'skipped_app_endpoint',

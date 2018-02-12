@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -19,7 +19,7 @@ class SmokeTests(TestCase):
             'email': 'smoke@test.com',
             'password': 'smoke_password'
         }
-        cls.smoke_user = User.objects.create_superuser(
+        cls.smoke_user = get_user_model().objects.create_superuser(
             cls.smoke_user_credentials['username'],
             cls.smoke_user_credentials['email'],
             cls.smoke_user_credentials['password'],
