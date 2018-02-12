@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.4.1 - 12/02/2018
+- fix [#5] - use `get_user_model()`
+
 ## 0.4.0 - 22/01/2018
 - add `--fixture` parameter
 
@@ -38,3 +41,4 @@
 - add setting `SKIP_SMOKE_TESTS`
 
 [#2]: https://github.com/kamilkijak/django-smoke-tests/issues/2
+[#5]: https://github.com/kamilkijak/django-smoke-tests/issues/5
