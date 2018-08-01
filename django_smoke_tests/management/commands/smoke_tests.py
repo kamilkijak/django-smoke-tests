@@ -18,8 +18,7 @@ class Command(BaseCommand):
             return CommandParser(
                 *args,
                 prog="%s %s" % (os.path.basename(prog_name), subcommand),
-                description=self.help or None,
-            )
+                description=self.help or None)
         try:               # django 2.1+
             parser = _create_parser()
         except TypeError:  # django 2.0-
