@@ -14,10 +14,16 @@ class Command(BaseCommand):
         """
         Override in order to skip default parameters like verbosity, version, etc.
         """
-        parser = CommandParser(
-            self, prog="%s %s" % (os.path.basename(prog_name), subcommand),
-            description=self.help or None,
-        )
+        def _create_parser(*args):
+            return CommandParser(
+                *args,
+                prog="%s %s" % (os.path.basename(prog_name), subcommand),
+                description=self.help or None,
+            )
+        try:               # django 2.1+
+            parser = _create_parser()
+        except TypeError:  # django 2.0-
+            parser = _create_parser(self)
         # create hidden options (required by BaseCommand)
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
         parser.add_argument('--pythonpath', help=argparse.SUPPRESS)
