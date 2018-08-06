@@ -22,8 +22,8 @@ Django command that finds all endpoints in project, executes HTTP requests again
 Requirements
 ------------
 
-- Python (2.7, 3.4, 3.5, 3.6)
-- Django (1.8, 1.9, 1.10, 1.11, 2.0)
+- Python (2.7, 3.4, 3.5, 3.6, 3.7)
+- Django (1.8, 1.9, 1.10, 1.11, 2.0, 2.1)
 
 Installation
 ------------
