@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.0.0 - 06/08/2018
+- add support for Django 2.1
+
 ## 0.4.1 - 12/02/2018
 - fix [#5] - use `get_user_model()`
 
