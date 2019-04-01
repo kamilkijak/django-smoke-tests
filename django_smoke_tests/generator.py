@@ -1,3 +1,4 @@
+import fnmatch
 import uuid
 
 from django.core.management import call_command
@@ -74,6 +75,13 @@ class SmokeTestsGenerator:
         for app_name in app_names or []:
             if app_name and app_name not in settings.INSTALLED_APPS:
                 raise AppNotInInstalledApps(app_name)
+        if getattr(settings, 'SKIP_SMOKE_APPS', False):
+            if not app_names:
+                app_names = settings.INSTALLED_APPS
+            expanded = []
+            for excluded in settings.SKIP_SMOKE_APPS:
+                expanded += fnmatch.filter(app_names, excluded)
+            app_names = list(set(app_names).difference(expanded))
         return app_names
 
     def _generate_test(self, url, method, detail_url=False):
