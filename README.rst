@@ -109,6 +109,17 @@ This setting should contain list of URLs' names.
         'all-astronauts',  # to skip url(r'^astronauts/', AllAstronauts.as_view(), name='all-astronauts')
     )
 
+To skip tests for specific installed application add ``SKIP_SMOKE_APPS`` option in your settings.
+
+This setting should contain list of application. Wildcards are allowed.
+
+.. code-block:: python
+
+    SKIP_SMOKE_APPS = (
+        'django*',
+        'wagtail*',
+    )
+
 
 Reporting bugs
 --------------
