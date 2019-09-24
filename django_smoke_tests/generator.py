@@ -50,7 +50,7 @@ class SmokeTestsGenerator:
         if http_methods:
             self.validate_custom_http_methods(http_methods)
         self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
-        self.allowed_status_codes = allowed_status_codes
+        self.allowed_status_codes = allowed_status_codes or self.ALLOWED_STATUS_CODES
         self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
         self.use_db = use_db
         self.app_names = self.validate_app_names(app_names)
