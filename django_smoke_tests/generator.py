@@ -101,7 +101,9 @@ class SmokeTestsGenerator:
 
     def execute(self):
         self.load_all_endpoints(URLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
+        languages = [lang for lang, _lang in settings.LANGUAGES]
         for url_pattern, lookup_str, url_name in self.all_patterns:
+            url_pattern = self.fix_url_pattern_if_pure_configured(url_pattern, languages)
             if not self.app_names or self.is_url_inside_specified_app(lookup_str):
                 self.create_tests_for_endpoint(url_pattern, url_name)
 
@@ -112,6 +114,16 @@ class SmokeTestsGenerator:
 
         call_command_kwargs = self._get_call_command_kwargs()
         call_command('test', 'django_smoke_tests', **call_command_kwargs)
+
+    @staticmethod
+    def fix_url_pattern_if_pure_configured(url_pattern, languages):
+        """
+            pure configured Django can work with LANGUAGES and without LANGUAGE_CODE (which defaults then to en-us)
+        """
+        if (languages and settings.LANGUAGE_CODE == 'en-us'
+                and url_pattern.startswith('en-us/') and 'en-us' not in languages):
+            return languages[0] + url_pattern[5:]
+        return url_pattern
 
     @staticmethod
     def _disable_native_migrations():
