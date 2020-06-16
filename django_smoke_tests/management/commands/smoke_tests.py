@@ -24,8 +24,10 @@ class Command(BaseCommand):
         except TypeError:  # django 2.0-
             parser = _create_parser(self)
         # create hidden options (required by BaseCommand)
+        parser.add_argument('--force-color', help=argparse.SUPPRESS)
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
         parser.add_argument('--pythonpath', help=argparse.SUPPRESS)
+        parser.add_argument('--skip-checks', help=argparse.SUPPRESS)
         parser.add_argument('--traceback', help=argparse.SUPPRESS)
         self.add_arguments(parser)
         return parser
