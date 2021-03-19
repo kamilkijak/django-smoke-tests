@@ -7,4 +7,4 @@ codecov>=2.0.0
 
 # Additional test requirements go here
 parameterized==0.6.1
-djangorestframework==3.7.3
+djangorestframework==3.11.2
