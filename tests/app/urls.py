@@ -29,6 +29,6 @@ skipped_app_url_patterns = [
 ]
 
 urlpatterns = [
-    re_path(r'^(/(?P<parameter>.+))?', app_view, name='app_view'),
+    re_path(r'^/(?P<parameter>.+)?', app_view, name='app_view'),
 ] + url_patterns_with_decorator_with_wraps + url_patterns_with_decorator_without_wraps + \
     skipped_app_url_patterns

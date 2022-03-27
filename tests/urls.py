@@ -12,13 +12,6 @@ from .views import (
 )
 
 
-django2_url_patterns = [
-    path(
-        'test-with-new-style-parameter/<int:parameter>', simple_method_view,
-        name='endpoint_with_new_style_parameter'
-    ),
-]
-
 # kept separately, because they are used in tests
 url_patterns_with_authentication = [
     url(r'^test-drf-auth/$', view_with_drf_auth, name='endpoint_with_drf_authentication'),
@@ -45,7 +38,15 @@ urlpatterns = [
     # fixed edge cases
     url(r'^app_urls/', include('tests.app.urls')),
 
-] + url_patterns_with_authentication + skipped_url_patterns + django2_url_patterns
+    # using path()
+    path(
+      'test-with-new-style-parameter/<int:parameter>', simple_method_view,
+      name='endpoint_with_new_style_parameter'
+    ),
+
+    path('admin/users/<str:parameter>/delete/', simple_method_view, name='delete_user')
+
+] + url_patterns_with_authentication + skipped_url_patterns
 
 router = DefaultRouter()
 router.register(r'view-set', SimpleViewSet, basename='view-set')

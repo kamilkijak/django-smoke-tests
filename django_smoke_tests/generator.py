@@ -145,14 +145,7 @@ class SmokeTestsGenerator:
 
     @staticmethod
     def get_lookup_str(url_pattern):
-        try:
-            return url_pattern.lookup_str
-        except AttributeError:
-            # Django < 1.10
-            callback = url_pattern.callback
-            if not hasattr(callback, '__name__'):
-                return callback.__module__ + "." + callback.__class__.__name__
-            return callback.__module__ + "." + callback.__name__
+        return url_pattern.lookup_str
 
     def create_tests_for_endpoint(self, url_pattern, url_name):
         if self.is_endpoint_skipped(url_name):
