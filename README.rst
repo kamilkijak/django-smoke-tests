@@ -5,8 +5,8 @@ django-smoke-tests
 .. image:: https://badge.fury.io/py/django-smoke-tests.svg
     :target: https://badge.fury.io/py/django-smoke-tests
 
-.. image:: https://travis-ci.org/kamilkijak/django-smoke-tests.svg?branch=master
-    :target: https://travis-ci.org/kamilkijak/django-smoke-tests
+.. image:: https://github.com/kamilkijak/django-smoke-tests/actions/workflows/actions-run-tests.yml/badge.svg?branch=master
+    :target: https://github.com/kamilkijak/django-smoke-tests/actions/workflows/actions-run-tests.yml
 
 .. image:: https://codecov.io/gh/kamilkijak/django-smoke-tests/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/kamilkijak/django-smoke-tests

@@ -1,0 +1,40 @@
+name: Run tests
+on: [push]
+
+jobs:
+  Run-Tests:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            python-version: '3.7'
+            TOX_ENV: py-django-22
+          - os: ubuntu-18.04
+            python-version: '3.7'
+            TOX_ENV: py-django-32
+          - os: ubuntu-18.04
+            python-version: '3.8'
+            TOX_ENV: py-django-22
+          - os: ubuntu-18.04
+            python-version: '3.8'
+            TOX_ENV: py-django-32
+          - os: ubuntu-18.04
+            python-version: '3.9'
+            TOX_ENV: py-django-22
+          - os: ubuntu-18.04
+            python-version: '3.9'
+            TOX_ENV: py-django-32
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - name: 'Set up Python ${{ matrix.python-version }}'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python-version }}'
+      - uses: actions/checkout@v2
+      - run: pip install -r requirements_test.txt
+      - run: tox -e $TOX_ENV
+        env:
+          TOX_ENV: '${{ matrix.TOX_ENV }}'
+      - run: codecov -e TOX_ENV
+      - run: echo "🍏 This job's status is ${{ job.status }}."
