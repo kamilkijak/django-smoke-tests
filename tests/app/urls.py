@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from .views import (
     app_view,
@@ -7,9 +7,10 @@ from .views import (
     view_with_decorator_without_wraps
 )
 
+# TODO: add tests using path()
 
 url_patterns_with_decorator_with_wraps = [
-    url(
+    re_path(
         r'^decorator-with-wraps/$', view_with_decorator_with_wraps,
         name='decorator_with_wraps'
     ),
@@ -17,17 +18,17 @@ url_patterns_with_decorator_with_wraps = [
 
 # views with custom decorators without @functools.wraps are not supported when specifying app_name
 url_patterns_with_decorator_without_wraps = [
-    url(
+    re_path(
         r'^decorator-without-wraps/$', view_with_decorator_without_wraps,
         name='decorator_without_wraps'
     ),
 ]
 
 skipped_app_url_patterns = [
-    url(r'^skipped-app-endpoint/$', skipped_app_view, name='skipped_app_endpoint'),
+    re_path(r'^skipped-app-endpoint/$', skipped_app_view, name='skipped_app_endpoint'),
 ]
 
 urlpatterns = [
-    url(r'^(/(?P<parameter>.+))?', app_view, name='app_view'),
+    re_path(r'^(/(?P<parameter>.+))?', app_view, name='app_view'),
 ] + url_patterns_with_decorator_with_wraps + url_patterns_with_decorator_without_wraps + \
     skipped_app_url_patterns

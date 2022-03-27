@@ -4,25 +4,14 @@ from django.core.management import call_command
 from django.conf import settings
 from django.utils.regex_helper import normalize
 
-try:
-    from django.urls import URLResolver
-except ImportError:
-    # Django < 2.0
-    try:
-        from django.urls import RegexURLResolver as URLResolver
-    except ImportError:
-        # Django < 1.10
-        from django.core.urlresolvers import RegexURLResolver as URLResolver
+from django.urls import URLResolver
 from unittest import skip
 
 from .tests import SmokeTests
 
 
 def get_pattern(url_pattern):
-    if hasattr(url_pattern, 'regex'):  # dj < 2.0
-        return url_pattern.regex.pattern
-    else:                              # dj >= 2.0
-        return str(url_pattern.pattern)
+    return str(url_pattern.pattern)
 
 
 class HTTPMethodNotSupported(Exception):

@@ -6,15 +6,7 @@ from django.test import TestCase, override_settings
 
 from django_smoke_tests.migrations import DisableMigrations
 
-try:
-    from django.urls import URLPattern
-except ImportError:
-    # Django < 2.0
-    try:
-        from django.urls import RegexURLPattern as URLPattern
-    except ImportError:
-        # Django < 1.10
-        from django.core.urlresolvers import RegexURLPattern as URLPattern
+from django.urls import URLPattern
 from django.views.generic import RedirectView
 from mock import patch
 from parameterized import parameterized

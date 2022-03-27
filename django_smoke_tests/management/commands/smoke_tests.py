@@ -10,7 +10,7 @@ from ...generator import SmokeTestsGenerator
 class Command(BaseCommand):
     help = "Smoke tests for Django endpoints."
 
-    def create_parser(self, prog_name, subcommand):
+    def create_parser(self, prog_name, subcommand, **kwargs):
         """
         Override in order to skip default parameters like verbosity, version, etc.
         """
@@ -18,11 +18,11 @@ class Command(BaseCommand):
             return CommandParser(
                 *args,
                 prog="%s %s" % (os.path.basename(prog_name), subcommand),
-                description=self.help or None)
-        try:               # django 2.1+
-            parser = _create_parser()
-        except TypeError:  # django 2.0-
-            parser = _create_parser(self)
+                description=self.help or None,
+                **kwargs,
+            )
+        parser = _create_parser()
+
         # create hidden options (required by BaseCommand)
         parser.add_argument('--force-color', help=argparse.SUPPRESS)
         parser.add_argument('--no-color', help=argparse.SUPPRESS)
