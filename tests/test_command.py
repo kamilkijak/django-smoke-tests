@@ -8,15 +8,7 @@ import random
 
 from django.core.management import call_command, CommandError
 from django.test import TestCase
-try:
-    from django.urls import URLPattern
-except ImportError:
-    # Django < 2.0
-    try:
-        from django.urls import RegexURLPattern as URLPattern
-    except ImportError:
-        # Django < 1.10
-        from django.core.urlresolvers import RegexURLPattern as URLPattern
+from django.urls import URLPattern
 from mock import patch
 
 from django_smoke_tests.generator import HTTPMethodNotSupported, SmokeTestsGenerator, get_pattern
