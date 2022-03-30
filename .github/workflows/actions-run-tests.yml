@@ -20,17 +20,26 @@ jobs:
             python-version: '3.8'
             TOX_ENV: py-django-32
           - os: ubuntu-18.04
+            python-version: '3.8'
+            TOX_ENV: py-django-40
+          - os: ubuntu-18.04
             python-version: '3.9'
             TOX_ENV: py-django-22
           - os: ubuntu-18.04
             python-version: '3.9'
             TOX_ENV: py-django-32
           - os: ubuntu-18.04
+            python-version: '3.9'
+            TOX_ENV: py-django-40
+          - os: ubuntu-18.04
             python-version: '3.10'
             TOX_ENV: py-django-22
           - os: ubuntu-18.04
             python-version: '3.10'
             TOX_ENV: py-django-32
+          - os: ubuntu-18.04
+            python-version: '3.10'
+            TOX_ENV: py-django-40
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - name: 'Set up Python ${{ matrix.python-version }}'
