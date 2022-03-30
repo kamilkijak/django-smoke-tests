@@ -1,12 +1,13 @@
 import random
 import unittest
+from unittest.mock import ANY
 
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
 from django_smoke_tests.migrations import DisableMigrations
 
-from django.urls import URLPattern
+from django.urls import path
 from django.views.generic import RedirectView
 from mock import patch
 from parameterized import parameterized
@@ -255,8 +256,8 @@ class TestSmokeTestsGenerator(TestCase):
     def test_create_skipped_test_for_not_supported_endpoint(self, http_method, mocked_normalize):
         mocked_normalize.return_value = []
         tests_generator = SmokeTestsGenerator()
-        url_pattern = URLPattern(
-            r'^{}$'.format(create_random_string()),
+        url_pattern = path(
+            create_random_string(),
             RedirectView.as_view(url='/', permanent=False),
             name=create_random_string()
         )
@@ -275,6 +276,36 @@ class TestSmokeTestsGenerator(TestCase):
 
         self.assertEqual(len(skipped), 1)
         self.assertEqual(len(tests_generator.warnings), 1)
+
+    @patch('django_smoke_tests.generator.SmokeTestsGenerator.create_tests_for_http_methods')
+    @patch('django_smoke_tests.generator.SmokeTestsGenerator.create_random_value')
+    def test_create_tests_for_endpoint_using_path_with_parameter(
+            self, mocked_create_random_value, mocked_create_tests_for_http_methods,
+    ):
+        # TDD for https://github.com/kamilkijak/django-smoke-tests/issues/15
+
+        mocked_random_uuid = '510a5c25-57e3-49a9-a31c-3e850ea7c8ad'
+        mocked_create_random_value.return_value = mocked_random_uuid
+
+        # Set up the generator and load one (problematic) path
+        url_pattern = path('admin/users/<str:parameter>/delete/', lambda _: None, name='test_endpoint')
+        tests_generator = SmokeTestsGenerator(http_methods=['GET'])
+        tests_generator.load_all_endpoints([url_pattern])
+
+        self.assertEqual(len(tests_generator.all_patterns), 1, 'Should only load 1 endpoint')
+
+        # Create a test for the path loaded above
+        loaded_url_pattern = tests_generator.all_patterns[0]
+        tests_generator.create_tests_for_endpoint(
+            loaded_url_pattern[0], loaded_url_pattern[2],  # url_pattern, url_name - logic from execute()
+        )
+
+        # Check if the test is created against a proper URL
+        mocked_create_tests_for_http_methods.assert_called_with(
+            '/admin/users/{}/delete/'.format(mocked_random_uuid),
+            ANY,
+            detail_url=True,
+        )
 
     @parameterized.expand(URL_PATTERNS_WITH_AUTH)
     @patch('django_smoke_tests.generator.call_command')
@@ -378,8 +409,8 @@ class TestSmokeTestsGenerator(TestCase):
     def test_smoke_test_is_created_only_for_specified_app(
             self, mocked_call_command
     ):
-        outside_app_url_pattern = URLPattern(
-            r'^{}$'.format(create_random_string()),
+        outside_app_url_pattern = path(
+            create_random_string(),
             RedirectView.as_view(url='/', permanent=False),
             name=create_random_string()
         )
