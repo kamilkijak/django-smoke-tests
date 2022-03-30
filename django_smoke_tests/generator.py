@@ -11,7 +11,7 @@ from .tests import SmokeTests
 
 
 def get_pattern(url_pattern):
-    return str(url_pattern.pattern)
+    return str(url_pattern.pattern.regex.pattern)
 
 
 class HTTPMethodNotSupported(Exception):
@@ -49,6 +49,7 @@ class SmokeTestsGenerator:
         self.fixture_path = fixture_path
         self.warnings = []
 
+        # TODO: consider simplifying the structure below or introducing type hints
         self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
 
     def validate_custom_http_methods(self, http_methods):
