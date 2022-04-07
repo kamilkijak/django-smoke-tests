@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2.0.0 - 07/04/2022 
+- drop support for Django 1.x, leave support for 2.2 LTS, 3.2 LTS only
+- fix [#15] - incorrect URLs generated for django2 style path() with parameters 
+- fix [#17] - support namespaces in SKIP_SMOKE_TESTS
+
+## 1.0.1 - 07/08/2018
+- fix documentation
+
 ## 1.0.0 - 06/08/2018
 - add support for Django 2.1
 
@@ -45,3 +53,5 @@
 
 [#2]: https://github.com/kamilkijak/django-smoke-tests/issues/2
 [#5]: https://github.com/kamilkijak/django-smoke-tests/issues/5
+[#15]: https://github.com/kamilkijak/django-smoke-tests/issues/15
+[#17]: https://github.com/kamilkijak/django-smoke-tests/issues/17
