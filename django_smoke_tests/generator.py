@@ -50,7 +50,7 @@ class SmokeTestsGenerator:
         self.warnings = []
 
         # TODO: consider simplifying the structure below or introducing type hints
-        self.all_patterns = []  # [(url_pattern, lookup_str, url_name),]
+        self.all_patterns = []  # [(url_pattern, lookup_str, url_name, url_namespace, app_name),]
 
     def validate_custom_http_methods(self, http_methods):
         unsupported_methods = set(http_methods) - set(self.SUPPORTED_HTTP_METHODS)
@@ -91,9 +91,9 @@ class SmokeTestsGenerator:
 
     def execute(self):
         self.load_all_endpoints(URLResolver(r'^/', settings.ROOT_URLCONF).url_patterns)
-        for url_pattern, lookup_str, url_name in self.all_patterns:
+        for url_pattern, lookup_str, url_name, url_namespace, app_name in self.all_patterns:
             if not self.app_names or self.is_url_inside_specified_app(lookup_str):
-                self.create_tests_for_endpoint(url_pattern, url_name)
+                self.create_tests_for_endpoint(url_pattern, url_name, url_namespace, app_name)
 
         if self.disable_migrations:
             self._disable_native_migrations()
@@ -131,25 +131,30 @@ class SmokeTestsGenerator:
                 return True
         return False
 
-    def load_all_endpoints(self, url_list, parent_url=''):
+    def load_all_endpoints(self, url_list, parent_url=None, parent_namespace=None, app_name=None):
         for url_pattern in url_list:
             if hasattr(url_pattern, 'url_patterns'):
                 self.load_all_endpoints(
-                    url_pattern.url_patterns, parent_url + get_pattern(url_pattern)
+                    url_pattern.url_patterns,
+                    parent_url + get_pattern(url_pattern) if parent_url else get_pattern(url_pattern),
+                    ':'.join(filter(None, [parent_namespace, url_pattern.namespace])),
+                    url_pattern.app_name,
                 )
             else:
                 self.all_patterns.append((
-                    parent_url + get_pattern(url_pattern),
+                    parent_url + get_pattern(url_pattern) if parent_url else get_pattern(url_pattern),
                     self.get_lookup_str(url_pattern),
-                    url_pattern.name
+                    url_pattern.name,
+                    parent_namespace,
+                    app_name,
                 ))
 
     @staticmethod
     def get_lookup_str(url_pattern):
         return url_pattern.lookup_str
 
-    def create_tests_for_endpoint(self, url_pattern, url_name):
-        if self.is_endpoint_skipped(url_name):
+    def create_tests_for_endpoint(self, url_pattern, url_name, url_namespace, app_name):
+        if self.is_endpoint_skipped(url_name, url_namespace, app_name):
             self.create_tests_for_http_methods(None, url_pattern, skipped=True)
         else:
             try:
@@ -166,8 +171,19 @@ class SmokeTestsGenerator:
                 self.create_tests_for_http_methods(url, url_pattern, detail_url=bool(url_params))
 
     @staticmethod
-    def is_endpoint_skipped(url_name):
+    def is_endpoint_skipped(url_name, url_namespace, app_name):
         try:
+            if not url_name:
+                return False
+
+            url_name_with_namespace = f'{url_namespace}:{url_name}' if url_namespace else url_name
+            if url_name_with_namespace in settings.SKIP_SMOKE_TESTS:
+                return True
+
+            url_name_with_app_name = f'{app_name}:{url_name}' if app_name else url_name
+            if url_name_with_app_name in settings.SKIP_SMOKE_TESTS:
+                return True
+
             return url_name and url_name in settings.SKIP_SMOKE_TESTS
         except AttributeError:
             return False

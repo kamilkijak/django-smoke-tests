@@ -101,12 +101,13 @@ Skipping tests
 ~~~~~~~~~~~~~~
 To skip tests for specific URLs add ``SKIP_SMOKE_TESTS`` option in your settings.
 
-This setting should contain list of URLs' names.
+This setting should contain list of URL pattern names.
 
 .. code-block:: python
 
     SKIP_SMOKE_TESTS = (
         'all-astronauts',  # to skip url(r'^astronauts/', AllAstronauts.as_view(), name='all-astronauts')
+        'missions:all-launches',  # to skip 'all-launches' from 'missions' app
     )
 
 

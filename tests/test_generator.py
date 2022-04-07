@@ -15,6 +15,7 @@ from parameterized import parameterized
 from django_smoke_tests.generator import AppNotInInstalledApps, SmokeTestsGenerator, get_pattern
 from django_smoke_tests.runners import NoDbTestRunner
 from django_smoke_tests.tests import SmokeTests
+from tests.another_app.urls import another_app_skipped_urls
 
 from tests.app.urls import urlpatterns as app_url_patterns
 from tests.app.urls import skipped_app_url_patterns
@@ -48,6 +49,11 @@ class DummyStream(object):
 
 
 class TestSmokeTestsGenerator(TestCase):
+    """
+    These tests rely on the dummy Django project created under tests/ directory.
+    TODO: consider splitting these tests into unit (using mocks) and integration tests (using dummy project)
+    """
+
     def setUp(self):
         super(TestSmokeTestsGenerator, self).setUp()
         self.tests_generator = SmokeTestsGenerator()
@@ -266,7 +272,7 @@ class TestSmokeTestsGenerator(TestCase):
         )
 
         tests_generator.create_tests_for_endpoint(
-            get_pattern(url_pattern), url_pattern.name
+            get_pattern(url_pattern), url_pattern.name, None, None,
         )
         self.assertTrue(
             hasattr(SmokeTests, expected_test_name)
@@ -296,8 +302,11 @@ class TestSmokeTestsGenerator(TestCase):
 
         # Create a test for the path loaded above
         loaded_url_pattern = tests_generator.all_patterns[0]
-        tests_generator.create_tests_for_endpoint(
-            loaded_url_pattern[0], loaded_url_pattern[2],  # url_pattern, url_name - logic from execute()
+        tests_generator.create_tests_for_endpoint(  # logic from execute()
+            loaded_url_pattern[0],
+            loaded_url_pattern[2],
+            loaded_url_pattern[3],
+            loaded_url_pattern[4],
         )
 
         # Check if the test is created against a proper URL
@@ -507,6 +516,48 @@ class TestSmokeTestsGenerator(TestCase):
 
         expected_test_name = tests_generator.create_test_name(
             http_method, '^app_urls/' + get_pattern(url_pattern)
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(failures, [])
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_skipped_app_url_using_namespace(self, mocked_call_command):
+        url_pattern = another_app_skipped_urls[0]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = tests_generator.create_test_name(
+            http_method, '^another_app_urls/' + get_pattern(url_pattern)
+        )
+
+        self.assertTrue(
+            hasattr(SmokeTests, expected_test_name)
+        )
+
+        is_successful, failures, skipped = self._execute_smoke_test(expected_test_name)
+
+        self.assertTrue(is_successful)
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(failures, [])
+
+    @patch('django_smoke_tests.generator.call_command')
+    def test_skipped_app_url_using_app_name(self, mocked_call_command):
+        url_pattern = another_app_skipped_urls[1]
+        http_method = 'GET'
+        tests_generator = SmokeTestsGenerator(http_methods=[http_method])
+        tests_generator.execute()
+
+        expected_test_name = tests_generator.create_test_name(
+            http_method, '^another_app_urls/' + get_pattern(url_pattern)
         )
 
         self.assertTrue(

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django_smoke_tests",
 
     'rest_framework',
+    'tests.another_app',
     'tests.app',
 ]
 
@@ -36,6 +37,8 @@ AUTH_USER_MODEL = 'app.CustomUserModel'
 SKIP_SMOKE_TESTS = (
     'skipped_endpoint',
     'skipped_app_endpoint',
+    'another_app_namespace:skipped_endpoint_by_namespace_in_another_app',
+    'another_app:skipped_endpoint_by_app_name_in_another_app',
 )
 
 if django.VERSION >= (1, 10):

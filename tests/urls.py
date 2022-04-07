@@ -36,7 +36,8 @@ urlpatterns = [
     ),
 
     # fixed edge cases
-    url(r'^app_urls/', include('tests.app.urls')),
+    path('app_urls/', include('tests.app.urls')),
+    path('another_app_urls/', include('tests.another_app.urls', namespace='another_app_namespace')),
 
     # using path()
     path(
