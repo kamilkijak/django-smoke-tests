@@ -2,6 +2,7 @@
 
 ## 2.0.0 - 07/04/2022 
 - drop support for Django 1.x, leave support for 2.2 LTS, 3.2 LTS only
+- drop support for Python 2.x
 - fix [#15] - incorrect URLs generated for django2 style path() with parameters 
 - fix [#17] - support namespaces in SKIP_SMOKE_TESTS
 
