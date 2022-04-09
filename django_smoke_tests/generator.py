@@ -40,7 +40,7 @@ class SmokeTestsGenerator:
             self.validate_custom_http_methods(http_methods)
         self.methods_to_test = http_methods or self.SUPPORTED_HTTP_METHODS
         self.allowed_status_codes = allowed_status_codes
-        self.disallowed_status_codes = disallowed_status_codes or self.DISALLOWED_STATUS_CODES
+        self.disallowed_status_codes = disallowed_status_codes
         self.use_db = use_db
         self.app_names = self.validate_app_names(app_names)
         self.disable_migrations = disable_migrations
@@ -71,14 +71,23 @@ class SmokeTestsGenerator:
             http_method_function = getattr(self_of_test.client, method.lower(), None)
             response = http_method_function(url, {})
             additional_status_codes = [404] if detail_url else []
+
+            # Allowed codes take precedence
             if self.allowed_status_codes and (
                 response.status_code not in self.allowed_status_codes + additional_status_codes
             ):
                 self_of_test.fail_test(url, method, response=response)
-            elif not self.allowed_status_codes and (
+
+            # Disallowed codes are only considered if allowed codes are not specified
+            elif not self.allowed_status_codes and self.disallowed_status_codes and (
                 response.status_code in self.disallowed_status_codes
             ):
                 self_of_test.fail_test(url, method, response=response)
+
+            # Neither allowed_status_codes nor disallowed_status_codes has been provided, use a default rule
+            elif not self.allowed_status_codes and not self.disallowed_status_codes:
+                if response.status_code not in [*self.ALLOWED_STATUS_CODES, *additional_status_codes]:
+                    self_of_test.fail_test(url, method, response=response)
         return test
 
     @staticmethod

@@ -80,7 +80,8 @@ Parameters
       -g, --get-only        shortcut for --http-methods GET
       --allow-status-codes ALLOW_STATUS_CODES
                             comma separated HTTP status codes that will be
-                            considered as success responses, eg. 200,201,204
+                            considered as success responses, eg. 200,201,204;
+                            404 is allowed by default for detail URLs (paths with parameters)
                             [default: 200,201,301,302,304,405]
       --disallow-status-codes DISALLOW_STATUS_CODES
                             comma separated HTTP status codes that will be
