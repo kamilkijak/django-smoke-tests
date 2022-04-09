@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2.1.0 - 09/04/2022
+- improve how allowed and disallowed status codes are handled, improve a default rule
+
 ## 2.0.0 - 07/04/2022 
 - drop support for Django 1.x, leave support for 2.2 LTS, 3.2 LTS only
 - drop support for Python 2.x
