@@ -332,7 +332,9 @@ class TestSmokeTestsGenerator(TestCase):
 
     @override_settings(MIGRATION_MODULES=DisableMigrations())
     def test_if_test_with_disabled_migrations_is_successful(self):
-        tests_generator = SmokeTestsGenerator()
+        tests_generator = SmokeTestsGenerator(
+            allowed_status_codes=[404]  # 404 expected with a random string url
+        )
         http_method = 'GET'
         endpoint_url = '/{}'.format(create_random_string())
         expected_test_name = self.tests_generator.create_test_name(
@@ -372,7 +374,11 @@ class TestSmokeTestsGenerator(TestCase):
         )
 
     def test_if_test_without_db_is_successful(self):
-        tests_generator = SmokeTestsGenerator(use_db=False)
+        tests_generator = SmokeTestsGenerator(
+            use_db=False,
+            allowed_status_codes=[404],  # 404 expected with a random string url
+        )
+
         http_method = 'GET'
         endpoint_url = '/{}'.format(create_random_string())
         expected_test_name = self.tests_generator.create_test_name(
@@ -387,7 +393,10 @@ class TestSmokeTestsGenerator(TestCase):
         self.assertEqual(tests_generator.warnings, [])
 
     def test_no_db_test_runner(self):
-        tests_generator = SmokeTestsGenerator(use_db=False)
+        tests_generator = SmokeTestsGenerator(
+            use_db=False,
+            allowed_status_codes=[404],  # 404 expected with a random string url
+        )
         http_method = 'GET'
         endpoint_url = '/{}'.format(create_random_string())
         expected_test_name = self.tests_generator.create_test_name(
@@ -596,7 +605,10 @@ class TestSmokeTestsGenerator(TestCase):
     @patch('django_smoke_tests.generator.call_command')
     def test_if_fixture_is_applied(self, call_command_for_test, call_command_for_loaddata):
         fixture_path = 'file.json'
-        tests_generator = SmokeTestsGenerator(fixture_path=fixture_path)
+        tests_generator = SmokeTestsGenerator(
+            fixture_path=fixture_path,
+            allowed_status_codes=[404],  # 404 expected with a random string url
+        )
         tests_generator.execute()
 
         http_method = 'GET'
